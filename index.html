@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Flashcard Metronome</title>
+        
+        <!-- Load third party libraries -->
+        <script src="code/lib/jquery-3.2.1.min.js"></script>
+        <script src="code/lib/two.min.js"></script>
+        <script src="code/lib/AudioContextMonkeyPatch.js"></script>
+
+        <style>
+            body { /* set the background color for the page*/
+                background-color: #d4d4d4; /* somewhere between c4c4c4 and e4e4e4 */ 
+            }
+
+            textarea { /* format all textarea objects */
+                font-size: 20px;
+                resize: none; /* switch to 'horizontal' to only allow for horizontal resizing */
+                vertical-align: middle;
+                background-color: transparent;
+                border-width: 3px;
+                /* border-color: transparent; */
+                -webkit-border-radius: 5px;
+                -moz-border-radius: 5px;
+                border-radius: 5px;
+                text-align: right;
+            }
+
+            #tempo-text-inputs { /* format the tempo-text-inputs div */
+                line-height: 2;
+                position: absolute; /* use absolute positioning so we can move the position in our javascript code if needed */
+                left: 130px;
+                top: 15px;
+            }
+            #subdivision-text-inputs { /* format the subdivision-text-inputs div */
+                line-height: 2;
+                position: absolute; /* use absolute positioning so we can move the position in our javascript code if needed */
+            }
+        </style>
+
+    </head>
+    
+    <body>
+        <div id="draw-shapes"></div>
+        <!-- Load drum machine source code -->
+        <script src='code/priority-linked-list.js'></script>
+        <script src='code/other-class-definitions.js'></script>
+        <script src='code/flashcard-metronome.js'></script>
+        <div id="tempo-text-inputs">
+            <textarea id="text-input-loop-length-millis" rows="1" cols="3"></textarea>
+        </div>
+        <div id="subdivision-text-inputs"></div>
+    </body>
+</html>
