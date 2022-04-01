@@ -67,7 +67,7 @@ window.onload = () => {
     let sequencerVerticalOffset = 100
     let sequencerHorizontalOffset = 150
     let sequencerWidth = 400
-    let spaceBetweenSequencerRows = 40
+    let spaceBetweenSequencerRows = 20 // consider putting the rows on top of each other. there are only 2 rows currently -- one for beats, and one for subdivisions. there should be no overlapping notes on the two rows.
     let timeTrackerHeight = 20
     let unplayedCircleRadius = 10
     let playedCircleRadius = 13
@@ -80,6 +80,20 @@ window.onload = () => {
     let pauseButtonHorizontalOffset = 150
     let pauseButtonWidth = 48
     let pauseButtonHeight = 48
+    /**
+     * gui settings: reset sequence / flashcards button
+     */
+    let resetButtonVerticalOffset = 170
+    let resetButtonHorizontalOffset = 210
+    let resetButtonWidth = 48
+    let resetButtonHeight = 48
+    /**
+     * gui settings: tap tempo button
+     */
+    let tapTempoButtonVerticalOffset = 170
+    let tapTempoButtonHorizontalOffset = 270
+    let tapTempoButtonWidth = 48
+    let tapTempoButtonHeight = 48
     /**
      * gui settings: colors
      */
@@ -95,8 +109,13 @@ window.onload = () => {
     /**
      * subdivision text input settings
      */
-    let subdivisionTextInputHorizontalPadding = 10
-    let subdivisionTextInputVerticalPadding = -17
+    // top row ('number of beats') text input
+    let numberOfBeatsTextInputXPosition = 550
+    let numberOfBeatsTextInputYPosition = 81
+    let numberOfSubdivisionsPerBeatTextInputXPosition = 620
+    let numberOfSubdivisionsPerBeatTextInputYPosition = 81
+    let subdivisionTextInputHorizontalPadding = 10 // not planning for this to be used by the metronome currently
+    let subdivisionTextInputVerticalPadding = -17 // not planning for this to be used by the metronome currently
     let maximumAllowedNumberOfSubdivisions = 1000
 
 
@@ -109,7 +128,9 @@ window.onload = () => {
 
     // create and store on-screen lines, shapes, etc. (these will be Two.js 'path' objects)
     // let timeTrackerLines = initializeTimeTrackerLines() // list of lines that move to represent the current time within the loop
-    let pauseButton = initializePauseButton() // a rectangle that will act as the pause button for now
+    let pauseButtonShapes = initializePauseButtonShapes() // a rectangle that will act as the pause button for now
+    let resetButton = initializeResetButton() // a rectangle that will act as the 'reset sequencer / metronome / flashcard deck' button for now
+    let tapTempoButton = initializeTapTempoButton() // a rectangle that will act as the 'tap tempo' button for now
     let beatsPerMinuteText = initializeBeatsPerMinuteText() // a label next to the 'beats per minute' text input
 
     two.update(); // this initial 'update' creates SVG '_renderer' properties for our shapes that we can add action listeners to, so it needs to go here
@@ -123,6 +144,8 @@ window.onload = () => {
     initializeSubdivisionTextInputsActionListeners();
 
     addPauseButtonActionListeners()
+    addResetButtonActionListeners()
+    addTapTempoButtonActionListeners()
 
     // create variables which will be used to track info about the note that is being clicked and dragged
     let circleBeingMoved = null
@@ -585,7 +608,7 @@ window.onload = () => {
         return beatsPerMinuteLabelText
     }
 
-    function initializePauseButton() {
+    function initializePauseButtonShapes() {
         let pauseButton = two.makePath(
             [
                 new Two.Anchor(pauseButtonHorizontalOffset, pauseButtonVerticalOffset),
@@ -595,15 +618,94 @@ window.onload = () => {
             ],
             false
         );
-        pauseButton.linewidth = sequencerAndToolsLineWidth
-        pauseButton.stroke = sequencerAndToolsLineColor
         pauseButton.fill = 'transparent'
-        return pauseButton
+
+        // draw pause button icon (2 rectangles for now. could also consider hiding this icon and showing a 'play button' triangle icon depending on whether metronome is paused or not)
+        // to do: clean these up a bit so that we can resize the pause button and these will scale automatically.
+        // or at least more carefully calculate the size of the icon's rectangles once we settle on the size of the button.
+        let pauseButtonIconRectangleWidth = 10
+        let pauseButtonIconRectangleHeight = 27
+        let pauseButtonIconRectangle1 = two.makePath(
+            [
+                new Two.Anchor(pauseButtonHorizontalOffset + 10, pauseButtonVerticalOffset + 10),
+                new Two.Anchor(pauseButtonHorizontalOffset + 10 + pauseButtonIconRectangleWidth, pauseButtonVerticalOffset + 10),
+                new Two.Anchor(pauseButtonHorizontalOffset + 10 + pauseButtonIconRectangleWidth, pauseButtonVerticalOffset + 10 + pauseButtonIconRectangleHeight),
+                new Two.Anchor(pauseButtonHorizontalOffset + 10, pauseButtonVerticalOffset + 10 + pauseButtonIconRectangleHeight),
+            ],
+            false
+        );
+        pauseButtonIconRectangle1.fill = 'transparent'
+
+        let pauseButtonIconRectangle2 = two.makePath(
+            [
+                new Two.Anchor(pauseButtonHorizontalOffset + 27, pauseButtonVerticalOffset + 10),
+                new Two.Anchor(pauseButtonHorizontalOffset + 27 + pauseButtonIconRectangleWidth, pauseButtonVerticalOffset + 10),
+                new Two.Anchor(pauseButtonHorizontalOffset + 27 + pauseButtonIconRectangleWidth, pauseButtonVerticalOffset + 10 + pauseButtonIconRectangleHeight),
+                new Two.Anchor(pauseButtonHorizontalOffset + 27, pauseButtonVerticalOffset + 10 + pauseButtonIconRectangleHeight),
+            ],
+            false
+        );
+        pauseButtonIconRectangle2.fill = 'transparent'
+
+        let pauseButtonShapes = [pauseButton, pauseButtonIconRectangle1, pauseButtonIconRectangle2]
+
+        for (let shape of pauseButtonShapes) {
+            shape.linewidth = sequencerAndToolsLineWidth
+            shape.stroke = sequencerAndToolsLineColor
+        }
+
+        return pauseButtonShapes
     }
 
     function addPauseButtonActionListeners() {
-        pauseButton._renderer.elem.addEventListener('click', (event) => {
-            togglePaused()
+        for (let shape of pauseButtonShapes) {
+            shape._renderer.elem.addEventListener('click', (event) => {
+                togglePaused()
+            })
+        }
+    }
+
+    function initializeResetButton() {
+        let resetButton = two.makePath(
+            [
+                new Two.Anchor(resetButtonHorizontalOffset, resetButtonVerticalOffset),
+                new Two.Anchor(resetButtonHorizontalOffset + resetButtonWidth, resetButtonVerticalOffset),
+                new Two.Anchor(resetButtonHorizontalOffset + resetButtonWidth, resetButtonVerticalOffset + resetButtonHeight),
+                new Two.Anchor(resetButtonHorizontalOffset, resetButtonVerticalOffset + resetButtonHeight),
+            ],
+            false
+        );
+        resetButton.linewidth = sequencerAndToolsLineWidth
+        resetButton.stroke = sequencerAndToolsLineColor
+        resetButton.fill = 'transparent'
+        return resetButton
+    }
+
+    function addResetButtonActionListeners() {
+        resetButton._renderer.elem.addEventListener('click', (event) => {
+            console.log("reset button pressed (doesn't do anything yet)")
+        })
+    }
+
+    function initializeTapTempoButton() {
+        let tapTempoButton = two.makePath(
+            [
+                new Two.Anchor(tapTempoButtonHorizontalOffset, tapTempoButtonVerticalOffset),
+                new Two.Anchor(tapTempoButtonHorizontalOffset + tapTempoButtonWidth, tapTempoButtonVerticalOffset),
+                new Two.Anchor(tapTempoButtonHorizontalOffset + tapTempoButtonWidth, tapTempoButtonVerticalOffset + tapTempoButtonHeight),
+                new Two.Anchor(tapTempoButtonHorizontalOffset, tapTempoButtonVerticalOffset + tapTempoButtonHeight),
+            ],
+            false
+        );
+        tapTempoButton.linewidth = sequencerAndToolsLineWidth
+        tapTempoButton.stroke = sequencerAndToolsLineColor
+        tapTempoButton.fill = 'transparent'
+        return tapTempoButton
+    }
+
+    function addTapTempoButtonActionListeners() {
+        tapTempoButton._renderer.elem.addEventListener('click', (event) => {
+            console.log("tap tempo button pressed (doesn't do anything yet)")
         })
     }
 
@@ -620,7 +722,9 @@ window.onload = () => {
         if (!paused) {
             paused = true
             mostRecentPauseTimeWithinLoop = currentTimeWithinCurrentLoop
-            pauseButton.fill = "#bfbfbf"
+            for (let shape of pauseButtonShapes) {
+                shape.fill = "#bfbfbf"
+            }
         }
     }
 
@@ -628,7 +732,9 @@ window.onload = () => {
         if (paused) {
             paused = false
             mostRecentUnpauseTime = currentTime
-            pauseButton.fill = "transparent"
+            for (let shape of pauseButtonShapes) {
+                shape.fill = "transparent"
+            }
         }
     }
 
@@ -697,8 +803,16 @@ window.onload = () => {
             textArea.cols = "3"
             textArea.rows = "1"
             textArea.style.position = "absolute"
-            textArea.style.top = "" + (sequencerVerticalOffset + (rowIndex * spaceBetweenSequencerRows) + subdivisionTextInputVerticalPadding) + "px"
-            textArea.style.left = "" + (sequencerHorizontalOffset + sequencerWidth + subdivisionTextInputHorizontalPadding) + "px"
+            if (rowIndex === 0) {
+                textArea.style.top = "" + numberOfBeatsTextInputYPosition + "px"
+                textArea.style.left = "" + numberOfBeatsTextInputXPosition + "px"
+            } else if (rowIndex === 1) {
+                textArea.style.top = "" + numberOfSubdivisionsPerBeatTextInputYPosition + "px"
+                textArea.style.left = "" + numberOfSubdivisionsPerBeatTextInputXPosition + "px"
+            } else { // not planning to need any rows besides the first and second one for the metronome, but keeping this here for convenience just in case they have a use eventually
+                textArea.style.top = "" + (sequencerVerticalOffset + (rowIndex * spaceBetweenSequencerRows) + subdivisionTextInputVerticalPadding) + "px"
+                textArea.style.left = "" + (sequencerHorizontalOffset + sequencerWidth + subdivisionTextInputHorizontalPadding) + "px"
+            }
             textArea.style.borderColor = sequencerAndToolsLineColor = sequencerAndToolsLineColor
             textArea.value = sequencer.rows[rowIndex].getNumberOfSubdivisions()
             domElements.divs.subdivisionTextInputs.appendChild(textArea);
@@ -776,7 +890,11 @@ window.onload = () => {
 
         // now deal with row 1 (the bottom row).
         // to keep it simple for now, let's just delete everything from the bottom and add all new stuff..
-        sequencer.rows[1].notesList = new PriorityLinkedList() // i haven't implemented the actual method to reset a row yet.. this should work for now
+        // i haven't implemented the actual method to reset a row yet.. this should work for now
+        sequencer.rows[1].notesList = new PriorityLinkedList()
+        for (let i = 0; i < nextNoteToScheduleForEachRow.length; i++) {
+            nextNoteToScheduleForEachRow[i] = null
+        }
 
         // fill in all new notes for the bottom row. skip anything that falls on a beat, since the top row contains all those. the bottom row is just for subdivisions.
         for (let i = 0; i < sequencer.rows[1].getNumberOfSubdivisions(); i++) {
