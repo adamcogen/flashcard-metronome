@@ -131,8 +131,8 @@ window.onload = () => {
     // create and store on-screen lines, shapes, etc. (these will be Two.js 'path' objects)
     // let timeTrackerLines = initializeTimeTrackerLines() // list of lines that move to represent the current time within the loop
     let pauseButtonShapes = initializePauseButtonShapes() // a rectangle that will act as the pause button for now
-    let resetButton = initializeResetButton() // a rectangle that will act as the 'reset sequencer / metronome / flashcard deck' button for now
-    let tapTempoButton = initializeTapTempoButton() // a rectangle that will act as the 'tap tempo' button for now
+    let resetButtonShapes = initializeResetButtonShapes() // a rectangle that will act as the 'reset sequencer / metronome / flashcard deck' button for now
+    let tapTempoButtonShapes = initializeTapTempoButtonShapes() // a rectangle that will act as the 'tap tempo' button for now
     // initialize labels for text inputs
     let beatsPerMinuteText = initializeLabelText("Beats per minute: ", 390, 45) // a label next to the 'beats per minute' text input
     let numberOfBeatsText = initializeLabelText("Number of beats: ", 390, 175) // a labdel next to the 'number of beats' text input
@@ -670,7 +670,7 @@ window.onload = () => {
         }
     }
 
-    function initializeResetButton() {
+    function initializeResetButtonShapes() {
         let resetButton = two.makePath(
             [
                 new Two.Anchor(resetButtonHorizontalOffset, resetButtonVerticalOffset),
@@ -683,16 +683,24 @@ window.onload = () => {
         resetButton.linewidth = sequencerAndToolsLineWidth
         resetButton.stroke = sequencerAndToolsLineColor
         resetButton.fill = 'transparent'
-        return resetButton
+
+        let resetButtonText = initializeLabelText("<<", resetButtonHorizontalOffset + 22, resetButtonVerticalOffset + 22)
+        resetButtonText.fill = sequencerAndToolsLineColor
+        resetButtonText.stroke = 'transparent'
+        resetButtonText.size = 30
+
+        return [resetButton, resetButtonText]
     }
 
     function addResetButtonActionListeners() {
-        resetButton._renderer.elem.addEventListener('click', (event) => {
-            console.log("reset button pressed (doesn't do anything yet)")
-        })
+        for (shape of resetButtonShapes) {
+            shape._renderer.elem.addEventListener('click', (event) => {
+                console.log("reset button pressed (doesn't do anything yet)")
+            })
+        }
     }
 
-    function initializeTapTempoButton() {
+    function initializeTapTempoButtonShapes() {
         let tapTempoButton = two.makePath(
             [
                 new Two.Anchor(tapTempoButtonHorizontalOffset, tapTempoButtonVerticalOffset),
@@ -705,13 +713,20 @@ window.onload = () => {
         tapTempoButton.linewidth = sequencerAndToolsLineWidth
         tapTempoButton.stroke = sequencerAndToolsLineColor
         tapTempoButton.fill = 'transparent'
-        return tapTempoButton
+
+        let tapTempoButtonText = initializeLabelText("TAP", tapTempoButtonHorizontalOffset + 24, tapTempoButtonVerticalOffset + 25)
+        tapTempoButtonText.fill = sequencerAndToolsLineColor
+        tapTempoButtonText.stroke = 'transparent'
+        tapTempoButtonText.size = 23
+        return [tapTempoButton, tapTempoButtonText]
     }
 
     function addTapTempoButtonActionListeners() {
-        tapTempoButton._renderer.elem.addEventListener('click', (event) => {
-            console.log("tap tempo button pressed (doesn't do anything yet)")
-        })
+        for (shape of tapTempoButtonShapes) {
+            shape._renderer.elem.addEventListener('click', (event) => {
+                console.log("tap tempo button pressed (doesn't do anything yet)")
+            })
+        }
     }
 
     // toggle whether the sequencer is 'paused' or not. this method gets called when we click the pause button
