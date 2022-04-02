@@ -76,21 +76,21 @@ window.onload = () => {
     /**
      * gui settings: pause button
      */
-    let pauseButtonVerticalOffset = 170
+    let pauseButtonVerticalOffset = 240
     let pauseButtonHorizontalOffset = 150
     let pauseButtonWidth = 48
     let pauseButtonHeight = 48
     /**
      * gui settings: reset sequence / flashcards button
      */
-    let resetButtonVerticalOffset = 170
+    let resetButtonVerticalOffset = 240
     let resetButtonHorizontalOffset = 210
     let resetButtonWidth = 48
     let resetButtonHeight = 48
     /**
      * gui settings: tap tempo button
      */
-    let tapTempoButtonVerticalOffset = 170
+    let tapTempoButtonVerticalOffset = 240
     let tapTempoButtonHorizontalOffset = 270
     let tapTempoButtonWidth = 48
     let tapTempoButtonHeight = 48
@@ -109,14 +109,16 @@ window.onload = () => {
     /**
      * subdivision text input settings
      */
+    let maximumAllowedNumberOfSubdivisions = 100
     // top row ('number of beats') text input
-    let numberOfBeatsTextInputXPosition = 550
-    let numberOfBeatsTextInputYPosition = 81
-    let numberOfSubdivisionsPerBeatTextInputXPosition = 620
-    let numberOfSubdivisionsPerBeatTextInputYPosition = 81
-    let subdivisionTextInputHorizontalPadding = 10 // not planning for this to be used by the metronome currently
-    let subdivisionTextInputVerticalPadding = -17 // not planning for this to be used by the metronome currently
-    let maximumAllowedNumberOfSubdivisions = 1000
+    let numberOfBeatsTextInputXPosition = 477
+    let numberOfBeatsTextInputYPosition = 160
+    // bottom row ('number of subdivisions per beat') text input
+    let numberOfSubdivisionsPerBeatTextInputXPosition = 477
+    let numberOfSubdivisionsPerBeatTextInputYPosition = 200
+    // default subdivision text input constants. not planning for these to be used by the metronome currently
+    let subdivisionTextInputHorizontalPadding = 10
+    let subdivisionTextInputVerticalPadding = -17
 
 
     // initialize sequencer data structure
@@ -131,7 +133,10 @@ window.onload = () => {
     let pauseButtonShapes = initializePauseButtonShapes() // a rectangle that will act as the pause button for now
     let resetButton = initializeResetButton() // a rectangle that will act as the 'reset sequencer / metronome / flashcard deck' button for now
     let tapTempoButton = initializeTapTempoButton() // a rectangle that will act as the 'tap tempo' button for now
-    let beatsPerMinuteText = initializeBeatsPerMinuteText() // a label next to the 'beats per minute' text input
+    // initialize labels for text inputs
+    let beatsPerMinuteText = initializeLabelText("Beats per minute: ", 390, 45) // a label next to the 'beats per minute' text input
+    let numberOfBeatsText = initializeLabelText("Number of beats: ", 390, 175) // a labdel next to the 'number of beats' text input
+    let numberOfSubdivisionsPerBeatText = initializeLabelText("Number of subdivisions per beat: ", 320, 217) // a labdel next to the 'number of subdivisions per beat' text input
 
     two.update(); // this initial 'update' creates SVG '_renderer' properties for our shapes that we can add action listeners to, so it needs to go here
 
@@ -599,13 +604,13 @@ window.onload = () => {
         return timeTrackerLines
     }
 
-    function initializeBeatsPerMinuteText() {
-        beatsPerMinuteLabelText = new Two.Text("Beats per minute: ", 390, 45);
-        beatsPerMinuteLabelText.fill = "black";
-        // beatsPerMinuteLabelText.stroke = "white";
-        beatsPerMinuteLabelText.size = 20;
-        two.add(beatsPerMinuteLabelText);
-        return beatsPerMinuteLabelText
+    function initializeLabelText(text, xPosition, yPosition) {
+        label = new Two.Text(text, xPosition, yPosition);
+        label.fill = "black";
+        // label.stroke = "white";
+        label.size = 20;
+        two.add(label);
+        return label
     }
 
     function initializePauseButtonShapes() {
