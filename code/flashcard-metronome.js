@@ -64,7 +64,7 @@ window.onload = () => {
     /**
      * gui settings: sequencer
      */
-    let sequencerVerticalOffset = 100
+    let sequencerVerticalOffset = 170
     let sequencerHorizontalOffset = 150
     let sequencerWidth = 400
     let spaceBetweenSequencerRows = 20 // consider putting the rows on top of each other. there are only 2 rows currently -- one for beats, and one for subdivisions. there should be no overlapping notes on the two rows.
@@ -76,34 +76,43 @@ window.onload = () => {
     /**
      * gui settings: pause button
      */
-    let pauseButtonVerticalOffset = 240
+    let pauseButtonVerticalOffset = 340
     let pauseButtonHorizontalOffset = 150
     let pauseButtonWidth = 48
     let pauseButtonHeight = 48
     /**
      * gui settings: reset sequence / flashcards button
      */
-    let resetButtonVerticalOffset = 240
+    let resetButtonVerticalOffset = 340
     let resetButtonHorizontalOffset = 210
     let resetButtonWidth = 48
     let resetButtonHeight = 48
     /**
      * gui settings: tap tempo button
      */
-    let tapTempoButtonVerticalOffset = 240
+    let tapTempoButtonVerticalOffset = 340
     let tapTempoButtonHorizontalOffset = 270
     let tapTempoButtonWidth = 48
     let tapTempoButtonHeight = 48
+    /**
+     * gui settings: tap tempo button
+     */
+    let settingsButtonVerticalOffset = 340
+    let settingsButtonHorizontalOffset = 330
+    let settingsButtonWidth = 48
+    let settingsButtonHeight = 48
     /**
      * gui settings: colors
      */
     let sequencerAndToolsLineColor = '#707070'
     let sequencerAndToolsLineWidth = 3
     /**
-     * tempo text input settings
+     * tempo (beats per minute) text input settings
      */
-    domElements.divs.tempoTextInputs.style.left = "477px"
-    domElements.divs.tempoTextInputs.style.top = "25px"
+    beatsPerMinuteTextInputHorizontalOffset = 477
+    beatsPerMinuteTextInputVerticalOffset = 215
+    domElements.divs.tempoTextInputs.style.left = "" + beatsPerMinuteTextInputHorizontalOffset + "px"
+    domElements.divs.tempoTextInputs.style.top = "" + beatsPerMinuteTextInputVerticalOffset + "px"
     let minimumAllowedBeatsPerMinute = 20;
     let maximumAllowedBeatsPerMinute = 500;
     /**
@@ -112,10 +121,10 @@ window.onload = () => {
     let maximumAllowedNumberOfSubdivisions = 100
     // top row ('number of beats') text input
     let numberOfBeatsTextInputXPosition = 477
-    let numberOfBeatsTextInputYPosition = 160
+    let numberOfBeatsTextInputYPosition = 260
     // bottom row ('number of subdivisions per beat') text input
     let numberOfSubdivisionsPerBeatTextInputXPosition = 477
-    let numberOfSubdivisionsPerBeatTextInputYPosition = 200
+    let numberOfSubdivisionsPerBeatTextInputYPosition = 300
     // default subdivision text input constants. not planning for these to be used by the metronome currently
     let subdivisionTextInputHorizontalPadding = 10
     let subdivisionTextInputVerticalPadding = -17
@@ -133,10 +142,11 @@ window.onload = () => {
     let pauseButtonShapes = initializePauseButtonShapes() // a rectangle that will act as the pause button for now
     let resetButtonShapes = initializeResetButtonShapes() // a rectangle that will act as the 'reset sequencer / metronome / flashcard deck' button for now
     let tapTempoButtonShapes = initializeTapTempoButtonShapes() // a rectangle that will act as the 'tap tempo' button for now
+    let settingsButtonShapes = initializeSettingsButtonShapes() // a rectangle that will act as the 'settings' button for now
     // initialize labels for text inputs
-    let beatsPerMinuteText = initializeLabelText("Beats per minute: ", 390, 45) // a label next to the 'beats per minute' text input
-    let numberOfBeatsText = initializeLabelText("Number of beats: ", 390, 175) // a labdel next to the 'number of beats' text input
-    let numberOfSubdivisionsPerBeatText = initializeLabelText("Number of subdivisions per beat: ", 320, 217) // a labdel next to the 'number of subdivisions per beat' text input
+    let beatsPerMinuteText = initializeLabelText("Beats per minute: ", beatsPerMinuteTextInputHorizontalOffset - 87, beatsPerMinuteTextInputVerticalOffset + 20) // a label next to the 'beats per minute' text input
+    let numberOfBeatsText = initializeLabelText("Number of beats: ", numberOfBeatsTextInputXPosition - 87, numberOfBeatsTextInputYPosition + 15) // a labdel next to the 'number of beats' text input
+    let numberOfSubdivisionsPerBeatText = initializeLabelText("Number of subdivisions per beat: ", numberOfSubdivisionsPerBeatTextInputXPosition - 157, numberOfSubdivisionsPerBeatTextInputYPosition + 17) // a labdel next to the 'number of subdivisions per beat' text input
 
     two.update(); // this initial 'update' creates SVG '_renderer' properties for our shapes that we can add action listeners to, so it needs to go here
 
@@ -151,6 +161,7 @@ window.onload = () => {
     addPauseButtonActionListeners()
     addResetButtonActionListeners()
     addTapTempoButtonActionListeners()
+    addSettingsButtonActionListeners()
 
     // create variables which will be used to track info about the note that is being clicked and dragged
     let circleBeingMoved = null
@@ -725,6 +736,35 @@ window.onload = () => {
         for (shape of tapTempoButtonShapes) {
             shape._renderer.elem.addEventListener('click', (event) => {
                 console.log("tap tempo button pressed (doesn't do anything yet)")
+            })
+        }
+    }
+
+    function initializeSettingsButtonShapes() {
+        let buttonRectangle = two.makePath(
+            [
+                new Two.Anchor(settingsButtonHorizontalOffset, settingsButtonVerticalOffset),
+                new Two.Anchor(settingsButtonHorizontalOffset + settingsButtonWidth, settingsButtonVerticalOffset),
+                new Two.Anchor(settingsButtonHorizontalOffset + settingsButtonWidth, settingsButtonVerticalOffset + settingsButtonHeight),
+                new Two.Anchor(settingsButtonHorizontalOffset, settingsButtonVerticalOffset + settingsButtonHeight),
+            ],
+            false
+        );
+        buttonRectangle.linewidth = sequencerAndToolsLineWidth
+        buttonRectangle.stroke = sequencerAndToolsLineColor
+        buttonRectangle.fill = 'transparent'
+
+        let buttonText = initializeLabelText("-", settingsButtonHorizontalOffset + 24, settingsButtonVerticalOffset + 25)
+        buttonText.fill = sequencerAndToolsLineColor
+        buttonText.stroke = 'transparent'
+        buttonText.size = 23
+        return [buttonRectangle, buttonText]
+    }
+
+    function addSettingsButtonActionListeners() {
+        for (shape of settingsButtonShapes) {
+            shape._renderer.elem.addEventListener('click', (event) => {
+                console.log("settings button pressed (doesn't do anything yet)")
             })
         }
     }
