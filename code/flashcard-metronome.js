@@ -128,7 +128,12 @@ window.onload = () => {
     // default subdivision text input constants. not planning for these to be used by the metronome currently
     let subdivisionTextInputHorizontalPadding = 10
     let subdivisionTextInputVerticalPadding = -17
-
+    // 'repeat flashcards?' checkbox position
+    let repeatFlashcardsCheckboxVerticalPosition = 400
+    let repeatFlashcardsCheckboxHorizontalPosition = 510
+    // 'show next flashcard preview?' checkbox position
+    let showNextFlashcardPreviewCheckboxVerticalPosition = 440
+    let showNextFlashcardPreviewCheckboxHorizontalPosition = 510
 
     // initialize sequencer data structure
     let sequencer = new Sequencer(2, loopLengthInMillis)
@@ -143,10 +148,14 @@ window.onload = () => {
     let resetButtonShapes = initializeResetButtonShapes() // a rectangle that will act as the 'reset sequencer / metronome / flashcard deck' button for now
     let tapTempoButtonShapes = initializeTapTempoButtonShapes() // a rectangle that will act as the 'tap tempo' button for now
     let settingsButtonShapes = initializeSettingsButtonShapes() // a rectangle that will act as the 'settings' button for now
+    let repeatFlashcardsCheckbox = initializeCheckbox(repeatFlashcardsCheckboxVerticalPosition, repeatFlashcardsCheckboxHorizontalPosition)
+    let showNextFlashcardPreviewCheckbox = initializeCheckbox(showNextFlashcardPreviewCheckboxVerticalPosition, showNextFlashcardPreviewCheckboxHorizontalPosition)
     // initialize labels for text inputs
     let beatsPerMinuteText = initializeLabelText("Beats per minute: ", beatsPerMinuteTextInputHorizontalOffset - 87, beatsPerMinuteTextInputVerticalOffset + 20) // a label next to the 'beats per minute' text input
     let numberOfBeatsText = initializeLabelText("Number of beats: ", numberOfBeatsTextInputXPosition - 87, numberOfBeatsTextInputYPosition + 15) // a labdel next to the 'number of beats' text input
-    let numberOfSubdivisionsPerBeatText = initializeLabelText("Number of subdivisions per beat: ", numberOfSubdivisionsPerBeatTextInputXPosition - 157, numberOfSubdivisionsPerBeatTextInputYPosition + 17) // a labdel next to the 'number of subdivisions per beat' text input
+    let numberOfSubdivisionsPerBeatText = initializeLabelText("Number of subdivisions per beat: ", numberOfSubdivisionsPerBeatTextInputXPosition - 157, numberOfSubdivisionsPerBeatTextInputYPosition + 17) // a label next to the 'number of subdivisions per beat' text input
+    let repeatFlashcardsCheckboxText = initializeLabelText("Show all flashcards before repeating any?", repeatFlashcardsCheckboxHorizontalPosition - 190, repeatFlashcardsCheckboxVerticalPosition + 14) // a label next to the 'repeat flashcards?' checkbox
+    let showNextFlashcardPreviewCheckboxText = initializeLabelText("Show preview of next flashcard?", showNextFlashcardPreviewCheckboxHorizontalPosition- 150, showNextFlashcardPreviewCheckboxVerticalPosition + 14)
 
     two.update(); // this initial 'update' creates SVG '_renderer' properties for our shapes that we can add action listeners to, so it needs to go here
 
@@ -162,6 +171,8 @@ window.onload = () => {
     addResetButtonActionListeners()
     addTapTempoButtonActionListeners()
     addSettingsButtonActionListeners()
+    addRepeatFlashcardsCheckboxActionListeners()
+    addShowNextFlashcardPreviewCheckboxActionListeners()
 
     // create variables which will be used to track info about the note that is being clicked and dragged
     let circleBeingMoved = null
@@ -798,6 +809,39 @@ window.onload = () => {
         }
     }
 
+    function initializeCheckbox(verticalPosition, horizontalPosition) {
+        let checkbox = document.createElement("input");
+        checkbox.setAttribute("type", "checkbox");
+        checkbox.style.position = "absolute";
+        checkbox.style.top = "" + verticalPosition + "px";
+        checkbox.style.left = "" + horizontalPosition + "px";
+        checkbox.style.width = "20px"
+        checkbox.style.height = "20px"
+        checkbox.style.outline = "20px"
+        domElements.divs.subdivisionTextInputs.appendChild(checkbox);
+        return checkbox
+    }
+
+    function addRepeatFlashcardsCheckboxActionListeners() {
+        repeatFlashcardsCheckbox.addEventListener('click', (event) => {
+            if (repeatFlashcardsCheckbox.checked) {
+                console.log("'repeat flashcards' checkbox is now CHECKED")
+            } else {
+                console.log("'repeat flashcards' checkbox is now UNCHECKED")
+            }
+        })
+    }
+
+    function addShowNextFlashcardPreviewCheckboxActionListeners() {
+        showNextFlashcardPreviewCheckbox.addEventListener('click', (event) => {
+            if (showNextFlashcardPreviewCheckbox.checked) {
+                console.log("'show preview of next flashcard' checkbox is now CHECKED")
+            } else {
+                console.log("'show preview of next flashcard' checkbox is now UNCHECKED")
+            }
+        })
+    }
+
     // restart the sequence, as in move the time tracker lines back to the beginning of the sequence, etc.
     function restartSequencer() {
         mostRecentPauseTimeWithinLoop = 0
@@ -873,7 +917,7 @@ window.onload = () => {
                 textArea.style.top = "" + (sequencerVerticalOffset + (rowIndex * spaceBetweenSequencerRows) + subdivisionTextInputVerticalPadding) + "px"
                 textArea.style.left = "" + (sequencerHorizontalOffset + sequencerWidth + subdivisionTextInputHorizontalPadding) + "px"
             }
-            textArea.style.borderColor = sequencerAndToolsLineColor = sequencerAndToolsLineColor
+            textArea.style.borderColor = sequencerAndToolsLineColor
             textArea.value = sequencer.rows[rowIndex].getNumberOfSubdivisions()
             domElements.divs.subdivisionTextInputs.appendChild(textArea);
             // note for later: the opposite of appendChild is removeChild
