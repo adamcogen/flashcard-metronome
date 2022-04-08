@@ -165,10 +165,17 @@ window.onload = () => {
     let showPreviewOnWhichBeatText = initializeLabelText("Show preview of next flashcard on which beat?", showPreviewOnWhichBeatTextInputHorizontalPosition - 5, showPreviewOnWhichBeatTextInputVerticalPosition + 17, "right")
     let showEachFlashcardForHowManyMeasuresText = initializeLabelText("Show each flashcard for how many measures?", showEachFlashcardForHowManyMeasuresTextInputHorizontalPosition - 5, showEachFlashcardForHowManyMeasuresTextInputVerticalPosition + 17, "right")
     let currentFlashcardLabelText = initializeLabelText(">", 155, 80, "left")
-    let currentFlashcardText = initializeLabelText("Current flashcard", 175, 80, "left")
-    let nextFlashcardPreviewText = initializeLabelText("Next flashcard", 175, 110, "left")
+    let currentFlashcardText = initializeLabelText("", 175, 80, "left")
+    let nextFlashcardPreviewText = initializeLabelText("", 175, 110, "left")
 
     two.update(); // this initial 'update' creates SVG '_renderer' properties for our shapes that we can add action listeners to, so it needs to go here
+
+    let allFlashcards = ["a", "b", "c", "d"]
+    let currentRemainingFlashcards = copyArray(allFlashcards)
+    let indexOfCurrentFlashcardToShow = -1;
+    let indexOfNextFlashcardToShow = getRandomInteger(currentRemainingFlashcards.length)
+    // nextFlashcardPreviewText.value = currentRemainingFlashcards[indexOfNextFlashcardToShow]
+    // deleteArrayElementAtIndex(currentRemainingFlashcards, getRandomInteger())
 
     initializeTempoTextInputValuesAndStyles();
     initializeTempoTextInputActionListeners();
@@ -261,6 +268,8 @@ window.onload = () => {
         timeTrackersXPosition = sequencerHorizontalOffset + (sequencerWidth * (currentTimeWithinCurrentLoop / loopLengthInMillis))
         currentBeatWithinLoop = Math.floor(currentTimeWithinCurrentLoop / (loopLengthInMillis / sequencer.rows[0].getNumberOfSubdivisions()))
 
+        // updateFlashcardTexts(currentBeatWithinLoop, numberOfLoopsSoFar)
+
         // draw time tracker lines (lines that follow along each row with time)
         // for (let timeTrackerLine of timeTrackerLine) {
         //     timeTrackerLine.position.x = timeTrackersXPosition
@@ -301,6 +310,8 @@ window.onload = () => {
         two.update() // update the GUI display
         requestAnimationFrameShim(draw); // call animation frame update with this 'draw' method again
     }
+
+    function updateFlashcardTexts(beatNumber, measureNumber) {}
 
     function scheduleNotesForCurrentTime(nextNoteToSchedule, sequencerRowIndex, currentTime, currentTimeWithinCurrentLoop, actualStartTimeOfCurrentLoop) {
         let numberOfLoopsSoFar = Math.floor(currentTime / loopLengthInMillis) // mostly used to make sure we don't schedule the same note twice. this number doesn't account for pauses, but i think that's fine. todo: make sure that's fine
@@ -1088,5 +1099,20 @@ window.onload = () => {
         assertEquals(6, confineNumberToBounds(6, 5, 10), "number between the bounds")
         assertEquals(10, confineNumberToBounds(10, 5, 10), "number same as upper bound")
         assertEquals(10, confineNumberToBounds(11, 5, 10), "number above upper bound")
+    }
+
+    function copyArray(arrayToCopy) {
+        return [...arrayToCopy]
+    }
+
+    // todo: check -- does this return an empty list if there is no element with the given index?
+    function deleteArrayElementAtIndex(array, indexOfElementToDelete) {
+        let listOfOneRemovedElement = array.splice(indexOfElementToDelete, 1) // this should go in and delete the element we want to delete!
+        return listOfOneRemovedElement
+    }
+
+    // return a random integer between 0 and 'maximum'
+    function getRandomInteger(maximum) {
+        return Math.floor(Math.random() * maximum);
     }
 }
