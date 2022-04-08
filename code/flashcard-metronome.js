@@ -134,6 +134,12 @@ window.onload = () => {
     // 'show next flashcard preview?' checkbox position
     let showNextFlashcardPreviewCheckboxVerticalPosition = 440
     let showNextFlashcardPreviewCheckboxHorizontalPosition = 510
+    // 'show each flashcard for how many measures?' text input position
+    let showEachFlashcardForHowManyMeasuresTextInputVerticalPosition = 520
+    let showEachFlashcardForHowManyMeasuresTextInputHorizontalPosition = 510
+    // 'show next flashcard preview on which beat?' text input position
+    let showPreviewOnWhichBeatTextInputVerticalPosition = 480
+    let showPreviewOnWhichBeatTextInputHorizontalPosition = 510
 
     // initialize sequencer data structure
     let sequencer = new Sequencer(2, loopLengthInMillis)
@@ -156,6 +162,8 @@ window.onload = () => {
     let numberOfSubdivisionsPerBeatText = initializeLabelText("Number of subdivisions per beat: ", numberOfSubdivisionsPerBeatTextInputXPosition - 5, numberOfSubdivisionsPerBeatTextInputYPosition + 17, "right") // a label next to the 'number of subdivisions per beat' text input
     let repeatFlashcardsCheckboxText = initializeLabelText("Show all flashcards before repeating any?", repeatFlashcardsCheckboxHorizontalPosition - 5, repeatFlashcardsCheckboxVerticalPosition + 14, "right") // a label next to the 'repeat flashcards?' checkbox
     let showNextFlashcardPreviewCheckboxText = initializeLabelText("Show preview of next flashcard?", showNextFlashcardPreviewCheckboxHorizontalPosition - 5, showNextFlashcardPreviewCheckboxVerticalPosition + 14, "right")
+    let showPreviewOnWhichBeatText = initializeLabelText("Show preview of next flashcard on which beat?", showPreviewOnWhichBeatTextInputHorizontalPosition - 5, showPreviewOnWhichBeatTextInputVerticalPosition + 17, "right")
+    let showEachFlashcardForHowManyMeasuresText = initializeLabelText("Show each flashcard for how many measures?", showEachFlashcardForHowManyMeasuresTextInputHorizontalPosition - 5, showEachFlashcardForHowManyMeasuresTextInputVerticalPosition + 17, "right")
     let currentFlashcardLabelText = initializeLabelText(">", 155, 80, "left")
     let currentFlashcardText = initializeLabelText("Current flashcard", 175, 80, "left")
     let nextFlashcardPreviewText = initializeLabelText("Next flashcard", 175, 110, "left")
@@ -169,6 +177,9 @@ window.onload = () => {
     let subdivisionTextInputs = []
     initializeSubdivisionTextInputsValuesAndStyles();
     initializeSubdivisionTextInputsActionListeners();
+
+    let showPreviewOnWhichBeatTextInput = initializeShowPreviewOfNextFlashcardOnWhichBeatTextInput();
+    let showEachFlashcardForHowManyMeasureTextInput = initializeShowEachFlashcardForHowManyMeasuresTextInput();
 
     addPauseButtonActionListeners()
     addResetButtonActionListeners()
@@ -844,6 +855,40 @@ window.onload = () => {
                 console.log("'show preview of next flashcard' checkbox is now UNCHECKED")
             }
         })
+    }
+
+    function initializeShowPreviewOfNextFlashcardOnWhichBeatTextInput() {
+        let textbox = document.createElement("textarea");
+        textbox.style.position = "absolute"
+        textbox.style.top = "" + showPreviewOnWhichBeatTextInputVerticalPosition + "px"
+        textbox.style.left = "" + showPreviewOnWhichBeatTextInputHorizontalPosition + "px"
+        textbox.cols = "3"
+        textbox.rows = "1"
+        domElements.divs.subdivisionTextInputs.appendChild(textbox);
+        textbox.addEventListener('focus', (event) => {
+            console.log("clicked into: 'show preview of next flashcard on which beat?' text input")
+        });
+        textbox.addEventListener('blur', (event) => {
+            console.log("clicked out of: 'show preview of next flashcard on which beat?' text input")
+        });
+        return textbox;
+    }
+
+    function initializeShowEachFlashcardForHowManyMeasuresTextInput() {
+        let textbox = document.createElement("textarea");
+        textbox.style.position = "absolute"
+        textbox.style.top = "" + showEachFlashcardForHowManyMeasuresTextInputVerticalPosition + "px"
+        textbox.style.left = "" + showEachFlashcardForHowManyMeasuresTextInputHorizontalPosition + "px"
+        textbox.cols = "3"
+        textbox.rows = "1"
+        domElements.divs.subdivisionTextInputs.appendChild(textbox);
+        textbox.addEventListener('focus', (event) => {
+            console.log("clicked into: 'show each flashcard for how many measures?' text input")
+        });
+        textbox.addEventListener('blur', (event) => {
+            console.log("clicked out of: 'show each flashcard for how many measures?' text input")
+        });
+        return textbox;
     }
 
     // restart the sequence, as in move the time tracker lines back to the beginning of the sequence, etc.
