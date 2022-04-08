@@ -151,11 +151,14 @@ window.onload = () => {
     let repeatFlashcardsCheckbox = initializeCheckbox(repeatFlashcardsCheckboxVerticalPosition, repeatFlashcardsCheckboxHorizontalPosition)
     let showNextFlashcardPreviewCheckbox = initializeCheckbox(showNextFlashcardPreviewCheckboxVerticalPosition, showNextFlashcardPreviewCheckboxHorizontalPosition)
     // initialize labels for text inputs
-    let beatsPerMinuteText = initializeLabelText("Beats per minute: ", beatsPerMinuteTextInputHorizontalOffset - 87, beatsPerMinuteTextInputVerticalOffset + 20) // a label next to the 'beats per minute' text input
-    let numberOfBeatsText = initializeLabelText("Number of beats: ", numberOfBeatsTextInputXPosition - 87, numberOfBeatsTextInputYPosition + 15) // a labdel next to the 'number of beats' text input
-    let numberOfSubdivisionsPerBeatText = initializeLabelText("Number of subdivisions per beat: ", numberOfSubdivisionsPerBeatTextInputXPosition - 157, numberOfSubdivisionsPerBeatTextInputYPosition + 17) // a label next to the 'number of subdivisions per beat' text input
-    let repeatFlashcardsCheckboxText = initializeLabelText("Show all flashcards before repeating any?", repeatFlashcardsCheckboxHorizontalPosition - 190, repeatFlashcardsCheckboxVerticalPosition + 14) // a label next to the 'repeat flashcards?' checkbox
-    let showNextFlashcardPreviewCheckboxText = initializeLabelText("Show preview of next flashcard?", showNextFlashcardPreviewCheckboxHorizontalPosition- 150, showNextFlashcardPreviewCheckboxVerticalPosition + 14)
+    let beatsPerMinuteText = initializeLabelText("Beats per minute: ", beatsPerMinuteTextInputHorizontalOffset - 5, beatsPerMinuteTextInputVerticalOffset + 20, "right") // a label next to the 'beats per minute' text input
+    let numberOfBeatsText = initializeLabelText("Number of beats: ", numberOfBeatsTextInputXPosition - 5, numberOfBeatsTextInputYPosition + 15, "right") // a labdel next to the 'number of beats' text input
+    let numberOfSubdivisionsPerBeatText = initializeLabelText("Number of subdivisions per beat: ", numberOfSubdivisionsPerBeatTextInputXPosition - 5, numberOfSubdivisionsPerBeatTextInputYPosition + 17, "right") // a label next to the 'number of subdivisions per beat' text input
+    let repeatFlashcardsCheckboxText = initializeLabelText("Show all flashcards before repeating any?", repeatFlashcardsCheckboxHorizontalPosition - 5, repeatFlashcardsCheckboxVerticalPosition + 14, "right") // a label next to the 'repeat flashcards?' checkbox
+    let showNextFlashcardPreviewCheckboxText = initializeLabelText("Show preview of next flashcard?", showNextFlashcardPreviewCheckboxHorizontalPosition - 5, showNextFlashcardPreviewCheckboxVerticalPosition + 14, "right")
+    let currentFlashcardLabelText = initializeLabelText(">", 155, 80, "left")
+    let currentFlashcardText = initializeLabelText("Current flashcard", 175, 80, "left")
+    let nextFlashcardPreviewText = initializeLabelText("Next flashcard", 175, 110, "left")
 
     two.update(); // this initial 'update' creates SVG '_renderer' properties for our shapes that we can add action listeners to, so it needs to go here
 
@@ -626,11 +629,12 @@ window.onload = () => {
         return timeTrackerLines
     }
 
-    function initializeLabelText(text, xPosition, yPosition) {
+    function initializeLabelText(text, xPosition, yPosition, alignment="left") {
         label = new Two.Text(text, xPosition, yPosition);
         label.fill = "black";
         // label.stroke = "white";
         label.size = 20;
+        label.alignment = alignment
         two.add(label);
         return label
     }
@@ -706,7 +710,7 @@ window.onload = () => {
         resetButton.stroke = sequencerAndToolsLineColor
         resetButton.fill = 'transparent'
 
-        let resetButtonText = initializeLabelText("<<", resetButtonHorizontalOffset + 22, resetButtonVerticalOffset + 22)
+        let resetButtonText = initializeLabelText("<<", resetButtonHorizontalOffset + 22, resetButtonVerticalOffset + 22, "center")
         resetButtonText.fill = sequencerAndToolsLineColor
         resetButtonText.stroke = 'transparent'
         resetButtonText.size = 30
@@ -736,7 +740,7 @@ window.onload = () => {
         tapTempoButton.stroke = sequencerAndToolsLineColor
         tapTempoButton.fill = 'transparent'
 
-        let tapTempoButtonText = initializeLabelText("TAP", tapTempoButtonHorizontalOffset + 24, tapTempoButtonVerticalOffset + 25)
+        let tapTempoButtonText = initializeLabelText("TAP", tapTempoButtonHorizontalOffset + 24, tapTempoButtonVerticalOffset + 25, "center")
         tapTempoButtonText.fill = sequencerAndToolsLineColor
         tapTempoButtonText.stroke = 'transparent'
         tapTempoButtonText.size = 23
@@ -765,7 +769,7 @@ window.onload = () => {
         buttonRectangle.stroke = sequencerAndToolsLineColor
         buttonRectangle.fill = 'transparent'
 
-        let buttonText = initializeLabelText("-", settingsButtonHorizontalOffset + 24, settingsButtonVerticalOffset + 25)
+        let buttonText = initializeLabelText("-", settingsButtonHorizontalOffset + 24, settingsButtonVerticalOffset + 25, "center")
         buttonText.fill = sequencerAndToolsLineColor
         buttonText.stroke = 'transparent'
         buttonText.size = 23
