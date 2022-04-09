@@ -251,6 +251,25 @@ window.onload = () => {
     let paused = false // store whether sequencer is paused or not
 
     /**
+     * Next need to think through how to calculate total runtime excluding pauses, so that we can track total number of loops so far.
+     * I think to do this, we need to keep track of two things:
+     * - the total runtime of the sequencer before the most recent pause
+     * - the total runtime of the sequencer after the most recent pause.
+     * I think the first piece (total runtime before most recent pause) can start out as 0, and whenever the sequencer is paused, we can 
+     * just add (current time - most recent unpause time) to its value. we already keep track of most recent pause time, so this should be 
+     * pretty simple.
+     * The second piece of this calculation (total runtime of the sequencer after most recent pause time) has two possibilities. if the
+     * sequencer is unpasued, the value can also just be calculated as (current time - most recent unpause time). But if the sequencer is
+     * paused, the value can just be left as 0.
+     * then, to calculate total runtime of the sequencer so far, we can just add the two components of the calculation together, as in:
+     * (the total runtime of the sequencer before the most recent pause + the total runtime of the sequencer after the most recent pause)
+     */
+    let totalRuntimeBeforeMostRecentPause = 0;
+    let totalRuntimeAfterMostRecentPause = 0;
+    let totalRuntimeOfSequencerSoFar = 0;
+    let totalNumberOfLoopsSoFar = 0;
+
+    /**
      * end of main logic, start of function definitions.
      */
 
@@ -267,6 +286,19 @@ window.onload = () => {
 
         timeTrackersXPosition = sequencerHorizontalOffset + (sequencerWidth * (currentTimeWithinCurrentLoop / loopLengthInMillis))
         currentBeatWithinLoop = Math.floor(currentTimeWithinCurrentLoop / (loopLengthInMillis / sequencer.rows[0].getNumberOfSubdivisions()))
+
+        // calculate total number of loops so far, ignoring time that elapsed during pauses
+        if (paused) {
+            totalRuntimeAfterMostRecentPause = 0;
+        } else {
+            totalRuntimeAfterMostRecentPause = currentTime - mostRecentUnpauseTime
+        }
+        totalRuntimeOfSequencerSoFar = totalRuntimeBeforeMostRecentPause + totalRuntimeAfterMostRecentPause
+        totalNumberOfLoopsSoFar = Math.floor(totalRuntimeOfSequencerSoFar / loopLengthInMillis);
+
+        // debug calculation of beat and measure number
+        currentFlashcardText.value = "current beat: " + currentBeatWithinLoop + "";
+        nextFlashcardPreviewText.value = "number of loops so far: " + totalNumberOfLoopsSoFar + "";
 
         // updateFlashcardTexts(currentBeatWithinLoop, numberOfLoopsSoFar)
 
@@ -819,6 +851,7 @@ window.onload = () => {
         if (!paused) {
             paused = true
             mostRecentPauseTimeWithinLoop = currentTimeWithinCurrentLoop
+            totalRuntimeBeforeMostRecentPause += currentTime - mostRecentUnpauseTime
             for (let shape of pauseButtonShapes) {
                 shape.fill = "#bfbfbf"
             }
