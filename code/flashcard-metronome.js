@@ -167,15 +167,17 @@ window.onload = () => {
     let currentFlashcardLabelText = initializeLabelText(">", 155, 80, "left")
     let currentFlashcardText = initializeLabelText("", 175, 80, "left")
     let nextFlashcardPreviewText = initializeLabelText("", 175, 110, "left")
+    let currentBeatNumber = initializeLabelText("", 175, 570, "left")
+    let currentMeasureNumber = initializeLabelText("", 175, 600, "left")
 
     two.update(); // this initial 'update' creates SVG '_renderer' properties for our shapes that we can add action listeners to, so it needs to go here
 
     let allFlashcards = ["a", "b", "c", "d"]
     let currentRemainingFlashcards = copyArray(allFlashcards)
-    let indexOfCurrentFlashcardToShow = -1;
-    let indexOfNextFlashcardToShow = getRandomInteger(currentRemainingFlashcards.length)
-    // nextFlashcardPreviewText.value = currentRemainingFlashcards[indexOfNextFlashcardToShow]
-    // deleteArrayElementAtIndex(currentRemainingFlashcards, getRandomInteger())
+    let indexOfNextFlashcardToShow = -1;
+
+    let numberOfMeasureToShowEachFlashcardFor = 2;
+    let beatNumberToShowNextFlashcardPreviewOn = 3;
 
     initializeTempoTextInputValuesAndStyles();
     initializeTempoTextInputActionListeners();
@@ -238,7 +240,7 @@ window.onload = () => {
      *   - we track 'current time' in millis
      *   - we track 'most recent unpause time'
      *   - we track 'most recent pause-time within loop' (as in, whether most recent pause happened half way thru a loop, towards the end of it, etc., but in millis)
-     *   - we calculate 'current time within current loop', account for all the pause-related stuff we tracking (see the code below for how)
+     *   - we calculate 'current time within current loop', accounting for all the pause-related stuff we tracking (see the code below for how)
      *   - we calculate 'theoretical start time of current loop, calculating for pauses': basically just 'actual current time' - 'current time within current loop'
      *   - once we have 'theoretical start time of current loop' and 'current time within current loop', we have enough info to schedule notes exactly the way we did
      *     before, and pausing / unpausing will be account for. we can also do little things like tell the scheduler to run only if the sequencer is unpaused, etc.
@@ -270,6 +272,13 @@ window.onload = () => {
     let totalNumberOfLoopsSoFar = 0;
 
     /**
+     * some variables for determining whenever we get to the next beat or the next measure. these will store the last recorded value of beat 
+     * and measure number, so that whenever those values get incremented, they won't match the values previously stored in these variables.
+     */
+    let beatOfLastUpdate = 0;
+    let loopNumberOfLastUpdate = 0;
+
+    /**
      * end of main logic, start of function definitions.
      */
 
@@ -297,10 +306,16 @@ window.onload = () => {
         totalNumberOfLoopsSoFar = Math.floor(totalRuntimeOfSequencerSoFar / loopLengthInMillis);
 
         // debug calculation of beat and measure number
-        currentFlashcardText.value = "current beat: " + currentBeatWithinLoop + "";
-        nextFlashcardPreviewText.value = "number of loops so far: " + totalNumberOfLoopsSoFar + "";
+        currentBeatNumber.value = "current beat: " + currentBeatWithinLoop + "";
+        currentMeasureNumber.value = "number of measures so far: " + totalNumberOfLoopsSoFar + "";
 
-        // updateFlashcardTexts(currentBeatWithinLoop, numberOfLoopsSoFar)
+        // whenever beat number or measure number changes, update the flashcards as necessary
+        if (currentBeatWithinLoop != beatOfLastUpdate || totalNumberOfLoopsSoFar != loopNumberOfLastUpdate) {
+            updateFlashcardTexts(currentBeatWithinLoop, totalNumberOfLoopsSoFar)
+        }
+
+        beatOfLastUpdate = currentBeatWithinLoop;
+        loopNumberOfLastUpdate = totalNumberOfLoopsSoFar;
 
         // draw time tracker lines (lines that follow along each row with time)
         // for (let timeTrackerLine of timeTrackerLine) {
@@ -343,7 +358,29 @@ window.onload = () => {
         requestAnimationFrameShim(draw); // call animation frame update with this 'draw' method again
     }
 
-    function updateFlashcardTexts(beatNumber, measureNumber) {}
+    function updateFlashcardTexts(beatNumber, measureNumber) {
+        if (currentRemainingFlashcards.length === 0){
+            currentRemainingFlashcards = copyArray(allFlashcards);
+        }
+
+        // show the preview of the next flashcard
+        if ((measureNumber % numberOfMeasureToShowEachFlashcardFor === numberOfMeasureToShowEachFlashcardFor - 1) && beatNumber >= beatNumberToShowNextFlashcardPreviewOn) {
+            if (beatNumber === beatNumberToShowNextFlashcardPreviewOn) {
+                indexOfNextFlashcardToShow = getRandomInteger(currentRemainingFlashcards.length)
+                nextFlashcardPreviewText.value = currentRemainingFlashcards[indexOfNextFlashcardToShow];
+            }
+        } else {
+            nextFlashcardPreviewText.value = ""
+        }
+
+        // show the next flashcard
+        if (measureNumber % numberOfMeasureToShowEachFlashcardFor === 0 && beatNumber === 0) {
+            currentFlashcardText.value = currentRemainingFlashcards[indexOfNextFlashcardToShow];
+            deleteArrayElementAtIndex(currentRemainingFlashcards, indexOfNextFlashcardToShow)
+        }
+
+
+    }
 
     function scheduleNotesForCurrentTime(nextNoteToSchedule, sequencerRowIndex, currentTime, currentTimeWithinCurrentLoop, actualStartTimeOfCurrentLoop) {
         let numberOfLoopsSoFar = Math.floor(currentTime / loopLengthInMillis) // mostly used to make sure we don't schedule the same note twice. this number doesn't account for pauses, but i think that's fine. todo: make sure that's fine
