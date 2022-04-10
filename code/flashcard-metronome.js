@@ -172,12 +172,13 @@ window.onload = () => {
 
     two.update(); // this initial 'update' creates SVG '_renderer' properties for our shapes that we can add action listeners to, so it needs to go here
 
-    let allFlashcards = ["a", "b", "c", "d"]
+    let allFlashcards = ["card 1", "card 2", "card 3"]
     let currentRemainingFlashcards = copyArray(allFlashcards)
     let indexOfNextFlashcardToShow = -1;
 
-    let numberOfMeasureToShowEachFlashcardFor = 2;
+    let numberOfMeasuresToShowEachFlashcardFor = 2;
     let beatNumberToShowNextFlashcardPreviewOn = 3;
+    let showPreviewOfNextFlashcard = true;
 
     initializeTempoTextInputValuesAndStyles();
     initializeTempoTextInputActionListeners();
@@ -275,8 +276,8 @@ window.onload = () => {
      * some variables for determining whenever we get to the next beat or the next measure. these will store the last recorded value of beat 
      * and measure number, so that whenever those values get incremented, they won't match the values previously stored in these variables.
      */
-    let beatOfLastUpdate = 0;
-    let loopNumberOfLastUpdate = 0;
+    let beatOfLastUpdate = -1;
+    let loopNumberOfLastUpdate = -1;
 
     /**
      * end of main logic, start of function definitions.
@@ -359,24 +360,28 @@ window.onload = () => {
     }
 
     function updateFlashcardTexts(beatNumber, measureNumber) {
+         // show the current flashcard
+         if (measureNumber % numberOfMeasuresToShowEachFlashcardFor === 0 && beatNumber === 0) {
+            if (indexOfNextFlashcardToShow !== -1) {
+                currentFlashcardText.value = currentRemainingFlashcards[indexOfNextFlashcardToShow];
+                deleteArrayElementAtIndex(currentRemainingFlashcards, indexOfNextFlashcardToShow);
+            }
+        }
+
         if (currentRemainingFlashcards.length === 0){
             currentRemainingFlashcards = copyArray(allFlashcards);
         }
 
         // show the preview of the next flashcard
-        if ((measureNumber % numberOfMeasureToShowEachFlashcardFor === numberOfMeasureToShowEachFlashcardFor - 1) && beatNumber >= beatNumberToShowNextFlashcardPreviewOn) {
+        if ((measureNumber % numberOfMeasuresToShowEachFlashcardFor === numberOfMeasuresToShowEachFlashcardFor - 1) && beatNumber >= beatNumberToShowNextFlashcardPreviewOn) {
             if (beatNumber === beatNumberToShowNextFlashcardPreviewOn) {
                 indexOfNextFlashcardToShow = getRandomInteger(currentRemainingFlashcards.length)
-                nextFlashcardPreviewText.value = currentRemainingFlashcards[indexOfNextFlashcardToShow];
+                if (showPreviewOfNextFlashcard) {
+                    nextFlashcardPreviewText.value = currentRemainingFlashcards[indexOfNextFlashcardToShow];
+                }
             }
         } else {
             nextFlashcardPreviewText.value = ""
-        }
-
-        // show the next flashcard
-        if (measureNumber % numberOfMeasureToShowEachFlashcardFor === 0 && beatNumber === 0) {
-            currentFlashcardText.value = currentRemainingFlashcards[indexOfNextFlashcardToShow];
-            deleteArrayElementAtIndex(currentRemainingFlashcards, indexOfNextFlashcardToShow)
         }
 
 
@@ -929,11 +934,17 @@ window.onload = () => {
     }
 
     function addShowNextFlashcardPreviewCheckboxActionListeners() {
+        // initialize checkbox 'checked' starting value based on starting value of relevant variable
+        showNextFlashcardPreviewCheckbox.checked = showPreviewOfNextFlashcard;
         showNextFlashcardPreviewCheckbox.addEventListener('click', (event) => {
             if (showNextFlashcardPreviewCheckbox.checked) {
-                console.log("'show preview of next flashcard' checkbox is now CHECKED")
+                showPreviewOnWhichBeatText.fill = "black"
+                showPreviewOnWhichBeatTextInput.disabled = false
+                showPreviewOfNextFlashcard = true
             } else {
-                console.log("'show preview of next flashcard' checkbox is now UNCHECKED")
+                showPreviewOnWhichBeatText.fill = "gray"
+                showPreviewOnWhichBeatTextInput.disabled = true
+                showPreviewOfNextFlashcard = false
             }
         })
     }
@@ -946,12 +957,13 @@ window.onload = () => {
         textbox.cols = "3"
         textbox.rows = "1"
         domElements.divs.subdivisionTextInputs.appendChild(textbox);
-        textbox.addEventListener('focus', (event) => {
-            console.log("clicked into: 'show preview of next flashcard on which beat?' text input")
-        });
         textbox.addEventListener('blur', (event) => {
-            console.log("clicked out of: 'show preview of next flashcard on which beat?' text input")
+            beatNumberToShowNextFlashcardPreviewOn = filterTextInputToInteger(textbox.value, beatNumberToShowNextFlashcardPreviewOn + 1, 1, sequencer.rows[0].getNumberOfSubdivisions()) - 1
+            textbox.value = beatNumberToShowNextFlashcardPreviewOn + 1
         });
+        // start the checkbox as disabled based on starting value of the relevant variable
+        textbox.value = beatNumberToShowNextFlashcardPreviewOn + 1
+        textbox.disabled = !showPreviewOfNextFlashcard
         return textbox;
     }
 
@@ -1005,6 +1017,14 @@ window.onload = () => {
             updateSequencerLoopLength(convertBeatsPerMinuteToLoopLengthInMillis(newTextInputValue, sequencer.rows[0].getNumberOfSubdivisions()))
             beatsPerMinute = newTextInputValue
         })
+    }
+
+    function filterTextInputToInteger(newValue, oldValue, lowerBound, upperBound) {
+        if (newValue === "" || isNaN(newValue)) {
+            return oldValue;
+        }
+        let newValueInt = parseInt(newValue)
+        return confineNumberToBounds(newValueInt, lowerBound, upperBound)
     }
 
     function updateSequencerLoopLength(newLoopLengthInMillis) {
@@ -1117,6 +1137,11 @@ window.onload = () => {
                     beat: i,
                 }));
             }
+        } else {
+            // new number of beats on top row is less than old number of beats on top row. 
+            // we need to deal with the 'next flashcard preview', in case it's showing the preview on a beat that doesn't exist anymore
+            beatNumberToShowNextFlashcardPreviewOn = confineNumberToBounds(beatNumberToShowNextFlashcardPreviewOn, 0, newNumberOfBeatsOnTopRow - 1)
+            showPreviewOnWhichBeatTextInput.value = beatNumberToShowNextFlashcardPreviewOn + 1
         }
         
         // update the bottom row to have the right number of subdivisions for how many beats there are in the top row now
