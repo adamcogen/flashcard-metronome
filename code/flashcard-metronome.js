@@ -141,12 +141,25 @@ window.onload = () => {
     let showPreviewOnWhichBeatTextInputVerticalPosition = 480
     let showPreviewOnWhichBeatTextInputHorizontalPosition = 510
 
+    // these will be used to slowly change colors of buttons that are pressed
+    let clickButtonsForHowManyMilliseconds = 200;
+    let lastResetButtonPressTime = Number.MIN_SAFE_INTEGER
+    let clickedButtonColor = "#bfbfbf"
+
     // initialize sequencer data structure
     let sequencer = new Sequencer(2, loopLengthInMillis)
     sequencer.rows[0].setNumberOfSubdivisions(4)
     sequencer.rows[0].setQuantization(true)
     sequencer.rows[1].setNumberOfSubdivisions(1)
     sequencer.rows[1].setQuantization(true)
+
+    let allFlashcards = ["card 1", "card 2", "card 3"]
+    let currentRemainingFlashcards = copyArray(allFlashcards)
+    let indexOfNextFlashcardToShow = -1;
+
+    let numberOfMeasuresToShowEachFlashcardFor = 2;
+    let beatNumberToShowNextFlashcardPreviewOn = 3;
+    let showPreviewOfNextFlashcard = true;
 
     // create and store on-screen lines, shapes, etc. (these will be Two.js 'path' objects)
     // let timeTrackerLines = initializeTimeTrackerLines() // list of lines that move to represent the current time within the loop
@@ -169,16 +182,9 @@ window.onload = () => {
     let nextFlashcardPreviewText = initializeLabelText("", 175, 110, "left")
     let currentBeatNumber = initializeLabelText("", 175, 570, "left")
     let currentMeasureNumber = initializeLabelText("", 175, 600, "left")
+    let cardsRemainingText = initializeLabelText("Cards used: 0 out of " + allFlashcards.length, 175, 630, "left")
 
     two.update(); // this initial 'update' creates SVG '_renderer' properties for our shapes that we can add action listeners to, so it needs to go here
-
-    let allFlashcards = ["card 1", "card 2", "card 3"]
-    let currentRemainingFlashcards = copyArray(allFlashcards)
-    let indexOfNextFlashcardToShow = -1;
-
-    let numberOfMeasuresToShowEachFlashcardFor = 2;
-    let beatNumberToShowNextFlashcardPreviewOn = 3;
-    let showPreviewOfNextFlashcard = true;
 
     initializeTempoTextInputValuesAndStyles();
     initializeTempoTextInputActionListeners();
@@ -355,6 +361,12 @@ window.onload = () => {
             }
         }
 
+        if (currentTime - lastResetButtonPressTime < clickButtonsForHowManyMilliseconds) {
+            resetButtonShapes[0].fill = clickedButtonColor;
+        } else {
+            resetButtonShapes[0].fill = "transparent"
+        }
+
         two.update() // update the GUI display
         requestAnimationFrameShim(draw); // call animation frame update with this 'draw' method again
     }
@@ -365,6 +377,7 @@ window.onload = () => {
             if (indexOfNextFlashcardToShow !== -1) {
                 currentFlashcardText.value = currentRemainingFlashcards[indexOfNextFlashcardToShow];
                 deleteArrayElementAtIndex(currentRemainingFlashcards, indexOfNextFlashcardToShow);
+                cardsRemainingText.value = "Cards used: " + (allFlashcards.length - currentRemainingFlashcards.length) + " out of " + allFlashcards.length
             }
         }
 
@@ -816,7 +829,8 @@ window.onload = () => {
     function addResetButtonActionListeners() {
         for (shape of resetButtonShapes) {
             shape._renderer.elem.addEventListener('click', (event) => {
-                console.log("reset button pressed (doesn't do anything yet)")
+                lastResetButtonPressTime = currentTime;
+                resetFlashcardMetronome()
             })
         }
     }
@@ -894,7 +908,7 @@ window.onload = () => {
             mostRecentPauseTimeWithinLoop = currentTimeWithinCurrentLoop
             totalRuntimeBeforeMostRecentPause += currentTime - mostRecentUnpauseTime
             for (let shape of pauseButtonShapes) {
-                shape.fill = "#bfbfbf"
+                shape.fill = clickedButtonColor;
             }
         }
     }
@@ -991,6 +1005,26 @@ window.onload = () => {
         totalRuntimeAfterMostRecentPause = 0
         for (let nextNoteToScheduleForRow of nextNoteToScheduleForEachRow) {
             nextNoteToScheduleForRow = null // reset next note to schedule. 'head' will get picked up on the next call to draw() 
+        }
+    }
+
+    function resetFlashcards() {
+        currentRemainingFlashcards = copyArray(allFlashcards);
+    }
+
+    function resetFlashcardMetronome() {
+        let wasPaused = paused
+        if (!paused){
+            pause()
+        }
+        restartSequencer()
+        resetFlashcards()
+        indexOfNextFlashcardToShow = -1;
+        currentFlashcardText.value = "";
+        nextFlashcardPreviewText.value = "";
+        cardsRemainingText.value = "Cards used: 0 out of " + allFlashcards.length
+        if (!wasPaused) {
+            unpause()
         }
     }
 
