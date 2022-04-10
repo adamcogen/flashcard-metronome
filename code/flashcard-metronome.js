@@ -384,7 +384,6 @@ window.onload = () => {
             nextFlashcardPreviewText.value = ""
         }
 
-
     }
 
     function scheduleNotesForCurrentTime(nextNoteToSchedule, sequencerRowIndex, currentTime, currentTimeWithinCurrentLoop, actualStartTimeOfCurrentLoop) {
@@ -987,6 +986,9 @@ window.onload = () => {
     // restart the sequence, as in move the time tracker lines back to the beginning of the sequence, etc.
     function restartSequencer() {
         mostRecentPauseTimeWithinLoop = 0
+        totalRuntimeOfSequencerSoFar = 0
+        totalRuntimeBeforeMostRecentPause = 0 
+        totalRuntimeAfterMostRecentPause = 0
         for (let nextNoteToScheduleForRow of nextNoteToScheduleForEachRow) {
             nextNoteToScheduleForRow = null // reset next note to schedule. 'head' will get picked up on the next call to draw() 
         }
@@ -1125,6 +1127,7 @@ window.onload = () => {
 
         // deal with row 0 (the top row)
         sequencer.setNumberOfSubdivisionsForRow(newNumberOfBeatsOnTopRow, 0)
+
         if (newNumberOfBeatsOnTopRow > oldNumberOfBeatsOnTopRow) {
             // special case for the metronome: if there are more subdivisions being added to the row, fill in the remaining beats with a new note
             for (let i = oldNumberOfBeatsOnTopRow; i < newNumberOfBeatsOnTopRow; i++) {
@@ -1171,6 +1174,20 @@ window.onload = () => {
         // then we will add the notes from the sequencer data structure to the display, so the display accurately reflects the current state of the sequencer.
         drawNotesToReflectSequencerCurrentState()
         updateSequencerLoopLength(convertBeatsPerMinuteToLoopLengthInMillis(beatsPerMinute, sequencer.rows[0].getNumberOfSubdivisions()))
+
+        /**
+         * todo: come up with better logic for changing number of subdivisions of the top row while the sequencer is running.
+         * the current problem comes from trying to calculate the number of measures that have elapsed so far. 
+         * this calculation uses the number of beats in the top row, the bpm, and the amount of time elapsed so far,
+         * so whenever one of these suddenly changes, the whole calculation gets thrown off. 
+         * i think what needs to happen to fix this, is that whenever one of these values suddenly changes,
+         * - all already-fully-finished measures get added to the 'elapsed time before last pause' piece of the calculation
+         * - any partially-completed last measure gets scaled up or down somehow? so that a calculated time of the current 
+         * measure stil reflects what we expect it to with the new number of subdivisions? and this measure is left in the
+         * 'time after last unpause' piece of the calculation
+         * - i'm not sure, i need to think about this more
+         */
+        restartSequencer()
     }
 
     // given a number and an upper and lower bound, confine the number to be between the bounds.
