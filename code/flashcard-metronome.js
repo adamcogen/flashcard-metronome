@@ -129,8 +129,8 @@ window.onload = () => {
     let subdivisionTextInputHorizontalPadding = 10
     let subdivisionTextInputVerticalPadding = -17
     // 'repeat flashcards?' checkbox position
-    let repeatFlashcardsCheckboxVerticalPosition = 400
-    let repeatFlashcardsCheckboxHorizontalPosition = 510
+    let showAllFlashcardsBeforeRepeatingAnyCheckboxVerticalPosition = 400
+    let showAllFlashcardsBeforeRepeatingAnyCheckboxHorizontalPosition = 510
     // 'show next flashcard preview?' checkbox position
     let showNextFlashcardPreviewCheckboxVerticalPosition = 440
     let showNextFlashcardPreviewCheckboxHorizontalPosition = 510
@@ -143,8 +143,9 @@ window.onload = () => {
 
     // these will be used to slowly change colors of buttons that are pressed
     let clickButtonsForHowManyMilliseconds = 200;
-    let lastResetButtonPressTime = Number.MIN_SAFE_INTEGER
-    let clickedButtonColor = "#bfbfbf"
+    let lastResetButtonPressTime = Number.MIN_SAFE_INTEGER;
+    let clickedButtonColor = "#bfbfbf";
+    let showAllFlashcardsBeforeRepeatingAny = true;
 
     // initialize sequencer data structure
     let sequencer = new Sequencer(2, loopLengthInMillis)
@@ -167,13 +168,13 @@ window.onload = () => {
     let resetButtonShapes = initializeResetButtonShapes() // a rectangle that will act as the 'reset sequencer / metronome / flashcard deck' button for now
     let tapTempoButtonShapes = initializeTapTempoButtonShapes() // a rectangle that will act as the 'tap tempo' button for now
     let settingsButtonShapes = initializeSettingsButtonShapes() // a rectangle that will act as the 'settings' button for now
-    let repeatFlashcardsCheckbox = initializeCheckbox(repeatFlashcardsCheckboxVerticalPosition, repeatFlashcardsCheckboxHorizontalPosition)
+    let showAllFlashcardsBeforeRepeatingAnyCheckbox = initializeCheckbox(showAllFlashcardsBeforeRepeatingAnyCheckboxVerticalPosition, showAllFlashcardsBeforeRepeatingAnyCheckboxHorizontalPosition)
     let showNextFlashcardPreviewCheckbox = initializeCheckbox(showNextFlashcardPreviewCheckboxVerticalPosition, showNextFlashcardPreviewCheckboxHorizontalPosition)
     // initialize labels for text inputs
     let beatsPerMinuteText = initializeLabelText("Beats per minute: ", beatsPerMinuteTextInputHorizontalOffset - 5, beatsPerMinuteTextInputVerticalOffset + 20, "right") // a label next to the 'beats per minute' text input
     let numberOfBeatsText = initializeLabelText("Number of beats: ", numberOfBeatsTextInputXPosition - 5, numberOfBeatsTextInputYPosition + 15, "right") // a labdel next to the 'number of beats' text input
     let numberOfSubdivisionsPerBeatText = initializeLabelText("Number of subdivisions per beat: ", numberOfSubdivisionsPerBeatTextInputXPosition - 5, numberOfSubdivisionsPerBeatTextInputYPosition + 17, "right") // a label next to the 'number of subdivisions per beat' text input
-    let repeatFlashcardsCheckboxText = initializeLabelText("Show all flashcards before repeating any?", repeatFlashcardsCheckboxHorizontalPosition - 5, repeatFlashcardsCheckboxVerticalPosition + 14, "right") // a label next to the 'repeat flashcards?' checkbox
+    let showAllFlashcardsBeforeRepeatingAnyCheckboxText = initializeLabelText("Show all flashcards before repeating any?", showAllFlashcardsBeforeRepeatingAnyCheckboxHorizontalPosition - 5, showAllFlashcardsBeforeRepeatingAnyCheckboxVerticalPosition + 14, "right") // a label next to the 'repeat flashcards?' checkbox
     let showNextFlashcardPreviewCheckboxText = initializeLabelText("Show preview of next flashcard?", showNextFlashcardPreviewCheckboxHorizontalPosition - 5, showNextFlashcardPreviewCheckboxVerticalPosition + 14, "right")
     let showPreviewOnWhichBeatText = initializeLabelText("Show preview of next flashcard on which beat?", showPreviewOnWhichBeatTextInputHorizontalPosition - 5, showPreviewOnWhichBeatTextInputVerticalPosition + 17, "right")
     let showEachFlashcardForHowManyMeasuresText = initializeLabelText("Show each flashcard for how many measures?", showEachFlashcardForHowManyMeasuresTextInputHorizontalPosition - 5, showEachFlashcardForHowManyMeasuresTextInputVerticalPosition + 17, "right")
@@ -201,7 +202,7 @@ window.onload = () => {
     addResetButtonActionListeners()
     addTapTempoButtonActionListeners()
     addSettingsButtonActionListeners()
-    addRepeatFlashcardsCheckboxActionListeners()
+    addShowAllFlashcardsBeforeRepeatingAnyCheckboxActionListeners()
     addShowNextFlashcardPreviewCheckboxActionListeners()
 
     // create variables which will be used to track info about the note that is being clicked and dragged
@@ -376,8 +377,10 @@ window.onload = () => {
          if (measureNumber % numberOfMeasuresToShowEachFlashcardFor === 0 && beatNumber === 0) {
             if (indexOfNextFlashcardToShow !== -1) {
                 currentFlashcardText.value = currentRemainingFlashcards[indexOfNextFlashcardToShow];
-                deleteArrayElementAtIndex(currentRemainingFlashcards, indexOfNextFlashcardToShow);
-                cardsRemainingText.value = "Cards used: " + (allFlashcards.length - currentRemainingFlashcards.length) + " out of " + allFlashcards.length
+                if (showAllFlashcardsBeforeRepeatingAny) {
+                    deleteArrayElementAtIndex(currentRemainingFlashcards, indexOfNextFlashcardToShow);
+                    cardsRemainingText.value = "Cards used: " + (allFlashcards.length - currentRemainingFlashcards.length) + " out of " + allFlashcards.length
+                }
             }
         }
 
@@ -936,12 +939,15 @@ window.onload = () => {
         return checkbox
     }
 
-    function addRepeatFlashcardsCheckboxActionListeners() {
-        repeatFlashcardsCheckbox.addEventListener('click', (event) => {
-            if (repeatFlashcardsCheckbox.checked) {
-                console.log("'repeat flashcards' checkbox is now CHECKED")
+    function addShowAllFlashcardsBeforeRepeatingAnyCheckboxActionListeners() {
+        showAllFlashcardsBeforeRepeatingAnyCheckbox.checked = true
+        showAllFlashcardsBeforeRepeatingAnyCheckbox.addEventListener('click', (event) => {
+            if (showAllFlashcardsBeforeRepeatingAnyCheckbox.checked) {
+                showAllFlashcardsBeforeRepeatingAny = true
             } else {
-                console.log("'repeat flashcards' checkbox is now UNCHECKED")
+                showAllFlashcardsBeforeRepeatingAny = false
+                resetFlashcards() // reset the flashcard deck back to full
+                cardsRemainingText.value = ""
             }
         })
     }
