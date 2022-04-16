@@ -1091,6 +1091,12 @@ window.onload = () => {
         if (!wasPaused) {
             unpause()
         }
+        /**
+         * This is a temporary quick fix for an issue where changing the tempo of the metronome breaks the logic for iterating 
+         * through flashcards. Search for other occurrences of this method for a more detailed description of the issue. 
+         * Or see https://github.com/adamcogen/flashcard-metronome/issues/43
+         */
+        restartSequencer()
     }
 
     function initializeSubdivisionTextInputsValuesAndStyles() {
@@ -1226,6 +1232,7 @@ window.onload = () => {
          * measure stil reflects what we expect it to with the new number of subdivisions? and this measure is left in the
          * 'time after last unpause' piece of the calculation
          * - i'm not sure, i need to think about this more
+         * See https://github.com/adamcogen/flashcard-metronome/issues/43
          */
         restartSequencer()
     }
