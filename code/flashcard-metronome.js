@@ -184,6 +184,7 @@ window.onload = () => {
     let currentBeatNumber = initializeLabelText("", 175, 570, "left")
     let currentMeasureNumber = initializeLabelText("", 175, 600, "left")
     let cardsRemainingText = initializeLabelText("Cards used: 0 out of " + allFlashcards.length, 175, 630, "left")
+    let numberOfMeasuresCardHasBeenShownForSoFarText = initializeLabelText("Number of measures this card has been shown for: 0 out of " + numberOfMeasuresToShowEachFlashcardFor, 175, 660, "left")
 
     two.update(); // this initial 'update' creates SVG '_renderer' properties for our shapes that we can add action listeners to, so it needs to go here
 
@@ -316,6 +317,7 @@ window.onload = () => {
         // debug calculation of beat and measure number
         currentBeatNumber.value = "current beat: " + currentBeatWithinLoop + "";
         currentMeasureNumber.value = "number of measures so far: " + totalNumberOfLoopsSoFar + "";
+        numberOfMeasuresCardHasBeenShownForSoFarText.value = "Number of measures this card has been shown for: " + ((totalNumberOfLoopsSoFar % numberOfMeasuresToShowEachFlashcardFor) + 1) + " out of " + numberOfMeasuresToShowEachFlashcardFor
 
         // whenever beat number or measure number changes, update the flashcards as necessary
         if (currentBeatWithinLoop != beatOfLastUpdate || totalNumberOfLoopsSoFar != loopNumberOfLastUpdate) {
@@ -994,23 +996,36 @@ window.onload = () => {
         textbox.cols = "3"
         textbox.rows = "1"
         domElements.divs.subdivisionTextInputs.appendChild(textbox);
-        textbox.addEventListener('focus', (event) => {
-            console.log("clicked into: 'show each flashcard for how many measures?' text input")
-        });
         textbox.addEventListener('blur', (event) => {
-            console.log("clicked out of: 'show each flashcard for how many measures?' text input")
+            let newTextInputValue = textbox.value.trim() // remove whitespace from beginning and end of input then store it
+            if (newTextInputValue === "" || isNaN(newTextInputValue)) { // check if new input is a real number. if not, switch input box back to whatever value it had before.
+                newTextInputValue = numberOfMeasuresToShowEachFlashcardFor
+            }
+            newTextInputValue = parseInt(newTextInputValue)
+            newTextInputValue = confineNumberToBounds(newTextInputValue, 1, 999)
+            textbox.value = newTextInputValue
+            numberOfMeasuresToShowEachFlashcardFor = newTextInputValue
+            resetFlashcardMetronome()
         });
+        textbox.value = numberOfMeasuresToShowEachFlashcardFor
         return textbox;
     }
 
     // restart the sequence, as in move the time tracker lines back to the beginning of the sequence, etc.
     function restartSequencer() {
+        let wasPaused = paused
+        if (!paused) {
+            pause()
+        }
         mostRecentPauseTimeWithinLoop = 0
         totalRuntimeOfSequencerSoFar = 0
         totalRuntimeBeforeMostRecentPause = 0 
         totalRuntimeAfterMostRecentPause = 0
         for (let nextNoteToScheduleForRow of nextNoteToScheduleForEachRow) {
             nextNoteToScheduleForRow = null // reset next note to schedule. 'head' will get picked up on the next call to draw() 
+        }
+        if (!wasPaused) {
+            unpause()
         }
     }
 
@@ -1096,7 +1111,7 @@ window.onload = () => {
          * through flashcards. Search for other occurrences of this method for a more detailed description of the issue. 
          * Or see https://github.com/adamcogen/flashcard-metronome/issues/43
          */
-        restartSequencer()
+        resetFlashcardMetronome()
     }
 
     function initializeSubdivisionTextInputsValuesAndStyles() {
@@ -1234,7 +1249,7 @@ window.onload = () => {
          * - i'm not sure, i need to think about this more
          * See https://github.com/adamcogen/flashcard-metronome/issues/43
          */
-        restartSequencer()
+        resetFlashcardMetronome()
     }
 
     // given a number and an upper and lower bound, confine the number to be between the bounds.
