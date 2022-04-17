@@ -38,8 +38,8 @@ and replace 8000 with whatever port number the server says it's running on.
 
 For Windows, you should be able to just run the commands that are in these .sh files from the command line to start the HTTP server.
 
-### Java version screenshots
+### Java implementation
 
-Just for fun, here are some screenshots of the old Java version from 2018, which is not on GitHub. The Java version wasn't as interactive, didn't have as many features, and needed to be run from a JAR file..
+Just for fun, here is a screen capture of the old Java implementation from 2018, which is not on GitHub. The Java version wasn't as interactive, didn't have as many features, and needed to be run from a JAR file..
 
-![Java Flashcard Metronome: Chords](images/java-0.png "Java Flashcard Metronome: Chords") ![Java Flashcard Metronome: Notes](images/java-3.png "Java Flashcard Metronome: Notes") ![Java Flashcard Metronome: File Menu](images/java-2.png "Java Flashcard Metronome: File Menu") ![Java Flashcard Metronome: Settings Menu](images/java-4.png "Java Flashcard Metronome: Settings Menu")
+![Java Flashcard Metronome](images/java-5.gif "Java Flashcard Metronome")
