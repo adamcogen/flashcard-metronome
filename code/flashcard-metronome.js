@@ -64,41 +64,41 @@ window.onload = () => {
     /**
      * gui settings: sequencer
      */
-    let sequencerVerticalOffset = 170
-    let sequencerHorizontalOffset = 150
-    let sequencerWidth = 400
+    let sequencerVerticalOffset = 90
+    let sequencerHorizontalOffset = 40
+    let sequencerWidth = 350
     let spaceBetweenSequencerRows = 20 // consider putting the rows on top of each other. there are only 2 rows currently -- one for beats, and one for subdivisions. there should be no overlapping notes on the two rows.
     let timeTrackerHeight = 20
     let unplayedCircleRadius = 10
-    let playedCircleRadius = 13
+    let playedCircleRadius = 12
     let smallUnplayedCircleRadius = 6
-    let smallPlayedCircleRadius = 9
+    let smallPlayedCircleRadius = 7
     /**
      * gui settings: pause button
      */
-    let pauseButtonVerticalOffset = 340
-    let pauseButtonHorizontalOffset = 150
+    let pauseButtonVerticalOffset = sequencerVerticalOffset + 120
+    let pauseButtonHorizontalOffset = sequencerHorizontalOffset
     let pauseButtonWidth = 48
     let pauseButtonHeight = 48
     /**
      * gui settings: reset sequence / flashcards button
      */
-    let resetButtonVerticalOffset = 340
-    let resetButtonHorizontalOffset = 210
+    let resetButtonVerticalOffset = sequencerVerticalOffset + 120
+    let resetButtonHorizontalOffset = sequencerHorizontalOffset  + 110
     let resetButtonWidth = 48
     let resetButtonHeight = 48
     /**
      * gui settings: tap tempo button
      */
-    let tapTempoButtonVerticalOffset = 340
-    let tapTempoButtonHorizontalOffset = 270
+    let tapTempoButtonVerticalOffset = sequencerVerticalOffset + 120
+    let tapTempoButtonHorizontalOffset = sequencerHorizontalOffset  + 220
     let tapTempoButtonWidth = 48
     let tapTempoButtonHeight = 48
     /**
      * gui settings: tap tempo button
      */
-    let settingsButtonVerticalOffset = 340
-    let settingsButtonHorizontalOffset = 330
+    let settingsButtonVerticalOffset = sequencerVerticalOffset + 120
+    let settingsButtonHorizontalOffset = sequencerHorizontalOffset  + 330
     let settingsButtonWidth = 48
     let settingsButtonHeight = 48
     /**
@@ -109,10 +109,10 @@ window.onload = () => {
     /**
      * tempo (beats per minute) text input settings
      */
-    beatsPerMinuteTextInputHorizontalOffset = 477
-    beatsPerMinuteTextInputVerticalOffset = 215
-    domElements.divs.tempoTextInputs.style.left = "" + beatsPerMinuteTextInputHorizontalOffset + "px"
-    domElements.divs.tempoTextInputs.style.top = "" + beatsPerMinuteTextInputVerticalOffset + "px"
+    beatsPerMinuteTextInputHorizontalOffset = sequencerHorizontalOffset + 70
+    beatsPerMinuteTextInputVerticalOffset = sequencerVerticalOffset + 60
+    domElements.divs.tempoTextInputs.style.left = "" + (beatsPerMinuteTextInputHorizontalOffset + 70 ) + "px"
+    domElements.divs.tempoTextInputs.style.top = "" + (beatsPerMinuteTextInputVerticalOffset - 18) + "px"
     let minimumAllowedBeatsPerMinute = 20;
     let maximumAllowedBeatsPerMinute = 500;
     /**
@@ -120,26 +120,26 @@ window.onload = () => {
      */
     let maximumAllowedNumberOfSubdivisions = 100
     // top row ('number of beats') text input
-    let numberOfBeatsTextInputXPosition = 477
-    let numberOfBeatsTextInputYPosition = 260
+    let numberOfBeatsTextInputXPosition = sequencerHorizontalOffset + 70
+    let numberOfBeatsTextInputYPosition = sequencerVerticalOffset + 200
     // bottom row ('number of subdivisions per beat') text input
-    let numberOfSubdivisionsPerBeatTextInputXPosition = 477
-    let numberOfSubdivisionsPerBeatTextInputYPosition = 300
+    let numberOfSubdivisionsPerBeatTextInputXPosition = sequencerHorizontalOffset + 290
+    let numberOfSubdivisionsPerBeatTextInputYPosition = sequencerVerticalOffset + 200
     // default subdivision text input constants. not planning for these to be used by the metronome currently
     let subdivisionTextInputHorizontalPadding = 10
     let subdivisionTextInputVerticalPadding = -17
     // 'repeat flashcards?' checkbox position
-    let showAllFlashcardsBeforeRepeatingAnyCheckboxVerticalPosition = 400
-    let showAllFlashcardsBeforeRepeatingAnyCheckboxHorizontalPosition = 510
+    let showAllFlashcardsBeforeRepeatingAnyCheckboxVerticalPosition = sequencerVerticalOffset + 255
+    let showAllFlashcardsBeforeRepeatingAnyCheckboxHorizontalPosition = sequencerHorizontalOffset + 340
     // 'show next flashcard preview?' checkbox position
-    let showNextFlashcardPreviewCheckboxVerticalPosition = 440
-    let showNextFlashcardPreviewCheckboxHorizontalPosition = 510
+    let showNextFlashcardPreviewCheckboxVerticalPosition = sequencerVerticalOffset + 300
+    let showNextFlashcardPreviewCheckboxHorizontalPosition = sequencerHorizontalOffset + 320
     // 'show each flashcard for how many measures?' text input position
-    let showEachFlashcardForHowManyMeasuresTextInputVerticalPosition = 520
-    let showEachFlashcardForHowManyMeasuresTextInputHorizontalPosition = 510
+    let showEachFlashcardForHowManyMeasuresTextInputVerticalPosition = sequencerVerticalOffset + 380
+    let showEachFlashcardForHowManyMeasuresTextInputHorizontalPosition = sequencerHorizontalOffset + 330
     // 'show next flashcard preview on which beat?' text input position
-    let showPreviewOnWhichBeatTextInputVerticalPosition = 480
-    let showPreviewOnWhichBeatTextInputHorizontalPosition = 510
+    let showPreviewOnWhichBeatTextInputVerticalPosition = sequencerVerticalOffset + 335
+    let showPreviewOnWhichBeatTextInputHorizontalPosition = sequencerHorizontalOffset + 290
 
     // these will be used to slowly change colors of buttons that are pressed
     let clickButtonsForHowManyMilliseconds = 200;
@@ -154,13 +154,15 @@ window.onload = () => {
     sequencer.rows[1].setNumberOfSubdivisions(1)
     sequencer.rows[1].setQuantization(true)
 
-    let allFlashcards = ["card 1", "card 2", "card 3"]
+    let allFlashcards = ["Card 1", "Card 2", "Card 3"]
     let currentRemainingFlashcards = copyArray(allFlashcards)
     let indexOfNextFlashcardToShow = -1;
 
     let numberOfMeasuresToShowEachFlashcardFor = 2;
-    let beatNumberToShowNextFlashcardPreviewOn = 3;
+    let beatNumberToShowNextFlashcardPreviewOn = 0;
     let showPreviewOfNextFlashcard = true;
+
+    let showSettingsMenu = false;
 
     // create and store on-screen lines, shapes, etc. (these will be Two.js 'path' objects)
     // let timeTrackerLines = initializeTimeTrackerLines() // list of lines that move to represent the current time within the loop
@@ -171,20 +173,23 @@ window.onload = () => {
     let showAllFlashcardsBeforeRepeatingAnyCheckbox = initializeCheckbox(showAllFlashcardsBeforeRepeatingAnyCheckboxVerticalPosition, showAllFlashcardsBeforeRepeatingAnyCheckboxHorizontalPosition)
     let showNextFlashcardPreviewCheckbox = initializeCheckbox(showNextFlashcardPreviewCheckboxVerticalPosition, showNextFlashcardPreviewCheckboxHorizontalPosition)
     // initialize labels for text inputs
-    let beatsPerMinuteText = initializeLabelText("Beats per minute: ", beatsPerMinuteTextInputHorizontalOffset - 5, beatsPerMinuteTextInputVerticalOffset + 20, "right") // a label next to the 'beats per minute' text input
-    let numberOfBeatsText = initializeLabelText("Number of beats: ", numberOfBeatsTextInputXPosition - 5, numberOfBeatsTextInputYPosition + 15, "right") // a labdel next to the 'number of beats' text input
-    let numberOfSubdivisionsPerBeatText = initializeLabelText("Number of subdivisions per beat: ", numberOfSubdivisionsPerBeatTextInputXPosition - 5, numberOfSubdivisionsPerBeatTextInputYPosition + 17, "right") // a label next to the 'number of subdivisions per beat' text input
-    let showAllFlashcardsBeforeRepeatingAnyCheckboxText = initializeLabelText("Show all flashcards before repeating any?", showAllFlashcardsBeforeRepeatingAnyCheckboxHorizontalPosition - 5, showAllFlashcardsBeforeRepeatingAnyCheckboxVerticalPosition + 14, "right") // a label next to the 'repeat flashcards?' checkbox
-    let showNextFlashcardPreviewCheckboxText = initializeLabelText("Show preview of next flashcard?", showNextFlashcardPreviewCheckboxHorizontalPosition - 5, showNextFlashcardPreviewCheckboxVerticalPosition + 14, "right")
-    let showPreviewOnWhichBeatText = initializeLabelText("Show preview of next flashcard on which beat?", showPreviewOnWhichBeatTextInputHorizontalPosition - 5, showPreviewOnWhichBeatTextInputVerticalPosition + 17, "right")
-    let showEachFlashcardForHowManyMeasuresText = initializeLabelText("Show each flashcard for how many measures?", showEachFlashcardForHowManyMeasuresTextInputHorizontalPosition - 5, showEachFlashcardForHowManyMeasuresTextInputVerticalPosition + 17, "right")
-    let currentFlashcardLabelText = initializeLabelText(">", 155, 80, "left")
-    let currentFlashcardText = initializeLabelText("", 175, 80, "left")
-    let nextFlashcardPreviewText = initializeLabelText("", 175, 110, "left")
-    let currentBeatNumber = initializeLabelText("", 175, 570, "left")
-    let currentMeasureNumber = initializeLabelText("", 175, 600, "left")
-    let cardsRemainingText = initializeLabelText("Cards used: 0 out of " + allFlashcards.length, 175, 630, "left")
-    let numberOfMeasuresCardHasBeenShownForSoFarText = initializeLabelText("Number of measures this card has been shown for: 0 out of " + numberOfMeasuresToShowEachFlashcardFor, 175, 660, "left")
+    let beatsPerMinuteTextLeft = initializeLabelText("Tempo: ", beatsPerMinuteTextInputHorizontalOffset, beatsPerMinuteTextInputVerticalOffset, "left") // a label next to the 'beats per minute' text input
+    let beatsPerMinuteTextRight = initializeLabelText("bpm", beatsPerMinuteTextInputHorizontalOffset + 140, beatsPerMinuteTextInputVerticalOffset, "left") // a label next to the 'beats per minute' text input
+    let numberOfBeatsText = initializeLabelText("beats: ", numberOfBeatsTextInputXPosition - 5, numberOfBeatsTextInputYPosition + 15, "right") // a labdel next to the 'number of beats' text input
+    let numberOfSubdivisionsPerBeatText = initializeLabelText("subdivisions: ", numberOfSubdivisionsPerBeatTextInputXPosition - 5, numberOfSubdivisionsPerBeatTextInputYPosition + 17, "right") // a label next to the 'number of subdivisions per beat' text input
+    let showAllFlashcardsBeforeRepeatingAnyCheckboxText = initializeLabelText("show all flashcards before repeating?", showAllFlashcardsBeforeRepeatingAnyCheckboxHorizontalPosition - 5, showAllFlashcardsBeforeRepeatingAnyCheckboxVerticalPosition + 14, "right") // a label next to the 'repeat flashcards?' checkbox
+    let showNextFlashcardPreviewCheckboxText = initializeLabelText("show preview of next flashcard?", showNextFlashcardPreviewCheckboxHorizontalPosition - 5, showNextFlashcardPreviewCheckboxVerticalPosition + 14, "right")
+    let showPreviewOnWhichBeatText = initializeLabelText("show preview on which beat?", showPreviewOnWhichBeatTextInputHorizontalPosition - 5, showPreviewOnWhichBeatTextInputVerticalPosition + 17, "right")
+    let showEachFlashcardForHowManyMeasuresText = initializeLabelText("show cards for how many measures?", showEachFlashcardForHowManyMeasuresTextInputHorizontalPosition - 5, showEachFlashcardForHowManyMeasuresTextInputVerticalPosition + 17, "right")
+    let currentFlashcardLabelText = initializeLabelText(">", sequencerHorizontalOffset - 10, sequencerVerticalOffset - 60, "left")
+    let currentFlashcardText = initializeLabelText("", sequencerHorizontalOffset + 10, sequencerVerticalOffset - 60, "left")
+    let nextFlashcardPreviewText = initializeLabelText("", sequencerHorizontalOffset + 10, sequencerVerticalOffset - 30, "left")
+    // let currentBeatNumber = initializeLabelText("", 175, 570, "left")
+    // let currentMeasureNumber = initializeLabelText("", 175, 600, "left")
+    let cardsRemainingText = initializeLabelText("Cards used: 0 / " + allFlashcards.length, sequencerHorizontalOffset + 70, sequencerVerticalOffset + 95, "left")
+    // let measureNumberLabel = initializeLabelText("measure:", sequencerHorizontalOffset + sequencerWidth, sequencerVerticalOffset - 20, "left")
+    // measureNumberLabel.size = 12
+    let numberOfMeasuresCardHasBeenShownForSoFarText = initializeLabelText("0 / " + numberOfMeasuresToShowEachFlashcardFor, sequencerHorizontalOffset + sequencerWidth, sequencerVerticalOffset, "left")
 
     two.update(); // this initial 'update' creates SVG '_renderer' properties for our shapes that we can add action listeners to, so it needs to go here
 
@@ -205,6 +210,8 @@ window.onload = () => {
     addSettingsButtonActionListeners()
     addShowAllFlashcardsBeforeRepeatingAnyCheckboxActionListeners()
     addShowNextFlashcardPreviewCheckboxActionListeners()
+
+    adjustSettingsMenu()
 
     // create variables which will be used to track info about the note that is being clicked and dragged
     let circleBeingMoved = null
@@ -287,6 +294,8 @@ window.onload = () => {
     let beatOfLastUpdate = -1;
     let loopNumberOfLastUpdate = -1;
 
+    pause()
+
     /**
      * end of main logic, start of function definitions.
      */
@@ -315,9 +324,9 @@ window.onload = () => {
         totalNumberOfLoopsSoFar = Math.floor(totalRuntimeOfSequencerSoFar / loopLengthInMillis);
 
         // debug calculation of beat and measure number
-        currentBeatNumber.value = "current beat: " + currentBeatWithinLoop + "";
-        currentMeasureNumber.value = "number of measures so far: " + totalNumberOfLoopsSoFar + "";
-        numberOfMeasuresCardHasBeenShownForSoFarText.value = "Number of measures this card has been shown for: " + ((totalNumberOfLoopsSoFar % numberOfMeasuresToShowEachFlashcardFor) + 1) + " out of " + numberOfMeasuresToShowEachFlashcardFor
+        // currentBeatNumber.value = "current beat: " + currentBeatWithinLoop + "";
+        // currentMeasureNumber.value = "number of measures so far: " + totalNumberOfLoopsSoFar + "";
+        numberOfMeasuresCardHasBeenShownForSoFarText.value = "" + ((totalNumberOfLoopsSoFar % numberOfMeasuresToShowEachFlashcardFor) + 1) + " / " + numberOfMeasuresToShowEachFlashcardFor
 
         // whenever beat number or measure number changes, update the flashcards as necessary
         if (currentBeatWithinLoop != beatOfLastUpdate || totalNumberOfLoopsSoFar != loopNumberOfLastUpdate) {
@@ -381,7 +390,7 @@ window.onload = () => {
                 currentFlashcardText.value = currentRemainingFlashcards[indexOfNextFlashcardToShow];
                 if (showAllFlashcardsBeforeRepeatingAny) {
                     deleteArrayElementAtIndex(currentRemainingFlashcards, indexOfNextFlashcardToShow);
-                    cardsRemainingText.value = "Cards used: " + (allFlashcards.length - currentRemainingFlashcards.length) + " out of " + allFlashcards.length
+                    cardsRemainingText.value = "Cards used: " + (allFlashcards.length - currentRemainingFlashcards.length) + " / " + allFlashcards.length
                 }
             }
         }
@@ -893,8 +902,46 @@ window.onload = () => {
     function addSettingsButtonActionListeners() {
         for (shape of settingsButtonShapes) {
             shape._renderer.elem.addEventListener('click', (event) => {
-                console.log("settings button pressed (doesn't do anything yet)")
+                showSettingsMenu = !showSettingsMenu
+                if (showSettingsMenu) {
+                    settingsButtonShapes[0].fill = clickedButtonColor
+                } else {
+                    settingsButtonShapes[0].fill = 'transparent'
+                }
+                adjustSettingsMenu();
             })
+        }
+    }
+
+    function adjustSettingsMenu() {
+        if (showSettingsMenu) {
+            // show the settings menu
+            numberOfBeatsText.fill = "black"
+            numberOfSubdivisionsPerBeatText.fill = "black"
+            showAllFlashcardsBeforeRepeatingAnyCheckboxText.fill = "black"
+            showNextFlashcardPreviewCheckboxText.fill = "black"
+            showPreviewOnWhichBeatText.fill = "black"
+            showEachFlashcardForHowManyMeasuresText.fill = "black"
+            showAllFlashcardsBeforeRepeatingAnyCheckbox.style.display = "block"
+            showNextFlashcardPreviewCheckbox.style.display = "block"
+            subdivisionTextInputs[0].style.display = "block"
+            subdivisionTextInputs[1].style.display = "block"
+            showPreviewOnWhichBeatTextInput.style.display = "block"
+            showEachFlashcardForHowManyMeasureTextInput.style.display = "block"
+        } else {
+            // hide the settings menu
+            numberOfBeatsText.fill = "transparent"
+            numberOfSubdivisionsPerBeatText.fill = "transparent"
+            showAllFlashcardsBeforeRepeatingAnyCheckboxText.fill = "transparent"
+            showNextFlashcardPreviewCheckboxText.fill = "transparent"
+            showPreviewOnWhichBeatText.fill = "transparent"
+            showEachFlashcardForHowManyMeasuresText.fill = "transparent"
+            showAllFlashcardsBeforeRepeatingAnyCheckbox.style.display = "none"
+            showNextFlashcardPreviewCheckbox.style.display = "none"
+            subdivisionTextInputs[0].style.display = "none"
+            subdivisionTextInputs[1].style.display = "none"
+            showPreviewOnWhichBeatTextInput.style.display = "none"
+            showEachFlashcardForHowManyMeasureTextInput.style.display = "none"
         }
     }
 
@@ -1043,7 +1090,7 @@ window.onload = () => {
         indexOfNextFlashcardToShow = -1;
         currentFlashcardText.value = "";
         nextFlashcardPreviewText.value = "";
-        cardsRemainingText.value = "Cards used: 0 out of " + allFlashcards.length
+        cardsRemainingText.value = "Cards used: 0 / " + allFlashcards.length
         if (!wasPaused) {
             unpause()
         }
