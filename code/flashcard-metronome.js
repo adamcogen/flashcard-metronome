@@ -621,6 +621,8 @@ window.onload = () => {
         // add mouse events to the new circle
         two.update() // this 'update' needs to go here because it is what generates the new circle's _renderer.elem 
         
+        circle._renderer.elem.style.cursor = "pointer"
+
         // add border to circle on mouseover
         circle._renderer.elem.addEventListener('mouseenter', (event) => {
             circle.linewidth = 4
@@ -758,6 +760,13 @@ window.onload = () => {
         label.size = 20;
         label.alignment = alignment
         two.add(label);
+        two.update();
+        // prevent text selection
+        label._renderer.elem.addEventListener('mousedown', (event) => {
+            event.preventDefault();
+        })
+        label._renderer.elem.style.userSelect = "none";
+        label._renderer.elem.style.cursor = "default";
         return label
     }
 
@@ -846,6 +855,10 @@ window.onload = () => {
                 lastResetButtonPressTime = currentTime;
                 resetFlashcardMetronome()
             })
+            // prevent text selection for the '<<' text label
+            shape._renderer.elem.addEventListener('mousedown', (event) => {
+                event.preventDefault();
+            })
         }
     }
 
@@ -874,6 +887,10 @@ window.onload = () => {
         for (shape of tapTempoButtonShapes) {
             shape._renderer.elem.addEventListener('click', (event) => {
                 console.log("tap tempo button pressed (doesn't do anything yet)")
+            })
+            // prevent text selection for the 'TAP' text label
+            shape._renderer.elem.addEventListener('mousedown', (event) => {
+                event.preventDefault();
             })
         }
     }
