@@ -811,6 +811,8 @@ window.onload = () => {
 
         let pauseButtonShapes = [pauseButton, pauseButtonIconRectangle1, pauseButtonIconRectangle2]
 
+        two.update()
+
         for (let shape of pauseButtonShapes) {
             shape.linewidth = sequencerAndToolsLineWidth
             shape.stroke = sequencerAndToolsLineColor
@@ -824,6 +826,7 @@ window.onload = () => {
             shape._renderer.elem.addEventListener('click', (event) => {
                 togglePaused()
             })
+            shape._renderer.elem.style.cursor = "pointer";
         }
     }
 
@@ -859,6 +862,7 @@ window.onload = () => {
             shape._renderer.elem.addEventListener('mousedown', (event) => {
                 event.preventDefault();
             })
+            shape._renderer.elem.style.cursor = "pointer";
         }
     }
 
@@ -892,6 +896,7 @@ window.onload = () => {
             shape._renderer.elem.addEventListener('mousedown', (event) => {
                 event.preventDefault();
             })
+            shape._renderer.elem.style.cursor = "pointer";
         }
     }
 
@@ -927,6 +932,7 @@ window.onload = () => {
                 }
                 adjustSettingsMenu();
             })
+            shape._renderer.elem.style.cursor = "pointer";
         }
     }
 
@@ -1002,6 +1008,7 @@ window.onload = () => {
         checkbox.style.height = "20px"
         checkbox.style.outline = "20px"
         domElements.divs.subdivisionTextInputs.appendChild(checkbox);
+        checkbox.style.cursor = "pointer"
         return checkbox
     }
 
