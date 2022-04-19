@@ -58,14 +58,14 @@ window.onload = () => {
      * drum machine configurations
      */
     // assume the metronome is starting with 4 beats per loop
-    let beatsPerMinute = 120;
+    let beatsPerMinute = 70;
     let loopLengthInMillis = convertBeatsPerMinuteToLoopLengthInMillis(beatsPerMinute, 4); // length of the whole drum sequence (loop), in millliseconds
     const LOOK_AHEAD_MILLIS = 200; // number of milliseconds to look ahead when scheduling notes to play. note bigger value means that there is a longer delay for sounds to stop after the 'pause' button is hit.
     /**
      * gui settings: sequencer
      */
-    let sequencerVerticalOffset = 90
-    let sequencerHorizontalOffset = 40
+    let sequencerVerticalOffset = 130
+    let sequencerHorizontalOffset = 60
     let sequencerWidth = 350
     let spaceBetweenSequencerRows = 20 // consider putting the rows on top of each other. there are only 2 rows currently -- one for beats, and one for subdivisions. there should be no overlapping notes on the two rows.
     let timeTrackerHeight = 20
@@ -76,28 +76,28 @@ window.onload = () => {
     /**
      * gui settings: pause button
      */
-    let pauseButtonVerticalOffset = sequencerVerticalOffset + 120
+    let pauseButtonVerticalOffset = sequencerVerticalOffset + 140
     let pauseButtonHorizontalOffset = sequencerHorizontalOffset
     let pauseButtonWidth = 48
     let pauseButtonHeight = 48
     /**
      * gui settings: reset sequence / flashcards button
      */
-    let resetButtonVerticalOffset = sequencerVerticalOffset + 120
+    let resetButtonVerticalOffset = sequencerVerticalOffset + 140
     let resetButtonHorizontalOffset = sequencerHorizontalOffset  + 110
     let resetButtonWidth = 48
     let resetButtonHeight = 48
     /**
      * gui settings: tap tempo button
      */
-    let tapTempoButtonVerticalOffset = sequencerVerticalOffset + 120
+    let tapTempoButtonVerticalOffset = sequencerVerticalOffset + 140
     let tapTempoButtonHorizontalOffset = sequencerHorizontalOffset  + 220
     let tapTempoButtonWidth = 48
     let tapTempoButtonHeight = 48
     /**
      * gui settings: tap tempo button
      */
-    let settingsButtonVerticalOffset = sequencerVerticalOffset + 120
+    let settingsButtonVerticalOffset = sequencerVerticalOffset + 140
     let settingsButtonHorizontalOffset = sequencerHorizontalOffset  + 330
     let settingsButtonWidth = 48
     let settingsButtonHeight = 48
@@ -109,7 +109,7 @@ window.onload = () => {
     /**
      * tempo (beats per minute) text input settings
      */
-    beatsPerMinuteTextInputHorizontalOffset = sequencerHorizontalOffset + 70
+    beatsPerMinuteTextInputHorizontalOffset = sequencerHorizontalOffset + 100
     beatsPerMinuteTextInputVerticalOffset = sequencerVerticalOffset + 60
     domElements.divs.tempoTextInputs.style.left = "" + (beatsPerMinuteTextInputHorizontalOffset + 70 ) + "px"
     domElements.divs.tempoTextInputs.style.top = "" + (beatsPerMinuteTextInputVerticalOffset - 18) + "px"
@@ -121,24 +121,24 @@ window.onload = () => {
     let maximumAllowedNumberOfSubdivisions = 100
     // top row ('number of beats') text input
     let numberOfBeatsTextInputXPosition = sequencerHorizontalOffset + 70
-    let numberOfBeatsTextInputYPosition = sequencerVerticalOffset + 200
+    let numberOfBeatsTextInputYPosition = sequencerVerticalOffset + 220
     // bottom row ('number of subdivisions per beat') text input
     let numberOfSubdivisionsPerBeatTextInputXPosition = sequencerHorizontalOffset + 290
-    let numberOfSubdivisionsPerBeatTextInputYPosition = sequencerVerticalOffset + 200
+    let numberOfSubdivisionsPerBeatTextInputYPosition = sequencerVerticalOffset + 220
     // default subdivision text input constants. not planning for these to be used by the metronome currently
     let subdivisionTextInputHorizontalPadding = 10
     let subdivisionTextInputVerticalPadding = -17
     // 'repeat flashcards?' checkbox position
-    let showAllFlashcardsBeforeRepeatingAnyCheckboxVerticalPosition = sequencerVerticalOffset + 255
+    let showAllFlashcardsBeforeRepeatingAnyCheckboxVerticalPosition = sequencerVerticalOffset + 275
     let showAllFlashcardsBeforeRepeatingAnyCheckboxHorizontalPosition = sequencerHorizontalOffset + 340
     // 'show next flashcard preview?' checkbox position
-    let showNextFlashcardPreviewCheckboxVerticalPosition = sequencerVerticalOffset + 300
+    let showNextFlashcardPreviewCheckboxVerticalPosition = sequencerVerticalOffset + 320
     let showNextFlashcardPreviewCheckboxHorizontalPosition = sequencerHorizontalOffset + 320
     // 'show each flashcard for how many measures?' text input position
-    let showEachFlashcardForHowManyMeasuresTextInputVerticalPosition = sequencerVerticalOffset + 380
+    let showEachFlashcardForHowManyMeasuresTextInputVerticalPosition = sequencerVerticalOffset + 400
     let showEachFlashcardForHowManyMeasuresTextInputHorizontalPosition = sequencerHorizontalOffset + 330
     // 'show next flashcard preview on which beat?' text input position
-    let showPreviewOnWhichBeatTextInputVerticalPosition = sequencerVerticalOffset + 335
+    let showPreviewOnWhichBeatTextInputVerticalPosition = sequencerVerticalOffset + 355
     let showPreviewOnWhichBeatTextInputHorizontalPosition = sequencerHorizontalOffset + 290
 
     // these will be used to slowly change colors of buttons that are pressed
@@ -181,12 +181,12 @@ window.onload = () => {
     let showNextFlashcardPreviewCheckboxText = initializeLabelText("show preview of next flashcard?", showNextFlashcardPreviewCheckboxHorizontalPosition - 5, showNextFlashcardPreviewCheckboxVerticalPosition + 14, "right")
     let showPreviewOnWhichBeatText = initializeLabelText("show preview on which beat?", showPreviewOnWhichBeatTextInputHorizontalPosition - 5, showPreviewOnWhichBeatTextInputVerticalPosition + 17, "right")
     let showEachFlashcardForHowManyMeasuresText = initializeLabelText("show cards for how many measures?", showEachFlashcardForHowManyMeasuresTextInputHorizontalPosition - 5, showEachFlashcardForHowManyMeasuresTextInputVerticalPosition + 17, "right")
-    let currentFlashcardLabelText = initializeLabelText(">", sequencerHorizontalOffset - 10, sequencerVerticalOffset - 60, "left")
-    let currentFlashcardText = initializeLabelText("", sequencerHorizontalOffset + 10, sequencerVerticalOffset - 60, "left")
-    let nextFlashcardPreviewText = initializeLabelText("", sequencerHorizontalOffset + 10, sequencerVerticalOffset - 30, "left")
+    let currentFlashcardLabelText = initializeLabelText(">", sequencerHorizontalOffset - 10, sequencerVerticalOffset - 90, "left")
+    let currentFlashcardText = initializeLabelText("", sequencerHorizontalOffset + 10, sequencerVerticalOffset - 90, "left")
+    let nextFlashcardPreviewText = initializeLabelText("", sequencerHorizontalOffset + 10, sequencerVerticalOffset - 60, "left")
     // let currentBeatNumber = initializeLabelText("", 175, 570, "left")
     // let currentMeasureNumber = initializeLabelText("", 175, 600, "left")
-    let cardsRemainingText = initializeLabelText("Cards used: 0 / " + allFlashcards.length, sequencerHorizontalOffset + 70, sequencerVerticalOffset + 95, "left")
+    let cardsRemainingText = initializeLabelText("Cards used: 0 / " + allFlashcards.length, sequencerHorizontalOffset + 110, sequencerVerticalOffset + 95, "left")
     // let measureNumberLabel = initializeLabelText("measure:", sequencerHorizontalOffset + sequencerWidth, sequencerVerticalOffset - 20, "left")
     // measureNumberLabel.size = 12
     let numberOfMeasuresCardHasBeenShownForSoFarText = initializeLabelText("0 / " + numberOfMeasuresToShowEachFlashcardFor, sequencerHorizontalOffset + sequencerWidth, sequencerVerticalOffset, "left")
