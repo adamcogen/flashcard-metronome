@@ -37,6 +37,23 @@
                 line-height: 2;
                 position: absolute; /* use absolute positioning so we can move the position in our javascript code if needed */
             }
+
+            #flashcard-text-input-div {
+                line-height: 2;
+                position: absolute;
+            }
+
+            #flashcard-text-input-div textarea {
+                position: absolute;
+                font-size: 20px;
+                resize: none;
+                white-space: pre;
+                overflow-wrap: normal;
+                overflow-y: scroll;
+                overflow-x: scroll;
+                text-align: left;
+            }
+
         </style>
 
     </head>
@@ -51,5 +68,8 @@
             <textarea id="text-input-loop-length-millis" rows="1" cols="3"></textarea>
         </div>
         <div id="subdivision-text-inputs"></div>
+        <div id="flashcard-text-input-div">
+            <textarea id="flashcard-text-input" rows="8" cols="30" wrap="off"></textarea>
+        </div>
     </body>
 </html>

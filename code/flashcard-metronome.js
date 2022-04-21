@@ -9,10 +9,12 @@ window.onload = () => {
         divs: {
             drawShapes: document.getElementById('draw-shapes'),
             tempoTextInputs: document.getElementById('tempo-text-inputs'),
-            subdivisionTextInputs: document.getElementById('subdivision-text-inputs')
+            subdivisionTextInputs: document.getElementById('subdivision-text-inputs'),
+            flashcardTextInputDiv: document.getElementById('flashcard-text-input-div')
         },
         textInputs: {
             loopLengthMillis: document.getElementById('text-input-loop-length-millis'),
+            flashcardTextInput: document.getElementById('flashcard-text-input'),
         }
     }
 
@@ -190,6 +192,7 @@ window.onload = () => {
     // let measureNumberLabel = initializeLabelText("measure:", sequencerHorizontalOffset + sequencerWidth, sequencerVerticalOffset - 20, "left")
     // measureNumberLabel.size = 12
     let numberOfMeasuresCardHasBeenShownForSoFarText = initializeLabelText("0 / " + numberOfMeasuresToShowEachFlashcardFor, sequencerHorizontalOffset + sequencerWidth, sequencerVerticalOffset, "left")
+    let flashcardTextInputLabel = initializeLabelText("flashcards:", sequencerHorizontalOffset + 140, sequencerVerticalOffset + 450, "left")
 
     two.update(); // this initial 'update' creates SVG '_renderer' properties for our shapes that we can add action listeners to, so it needs to go here
 
@@ -210,6 +213,8 @@ window.onload = () => {
     addSettingsButtonActionListeners()
     addShowAllFlashcardsBeforeRepeatingAnyCheckboxActionListeners()
     addShowNextFlashcardPreviewCheckboxActionListeners()
+
+    initializeFlashcardTextInputValuesAndStyles()
 
     adjustSettingsMenu()
 
@@ -951,6 +956,8 @@ window.onload = () => {
             subdivisionTextInputs[1].style.display = "block"
             showPreviewOnWhichBeatTextInput.style.display = "block"
             showEachFlashcardForHowManyMeasureTextInput.style.display = "block"
+            domElements.textInputs.flashcardTextInput.style.display = "block"
+            flashcardTextInputLabel.fill = "black"
         } else {
             // hide the settings menu
             numberOfBeatsText.fill = "transparent"
@@ -965,6 +972,8 @@ window.onload = () => {
             subdivisionTextInputs[1].style.display = "none"
             showPreviewOnWhichBeatTextInput.style.display = "none"
             showEachFlashcardForHowManyMeasureTextInput.style.display = "none"
+            domElements.textInputs.flashcardTextInput.style.display = "none"
+            flashcardTextInputLabel.fill = "transparent"
         }
     }
 
@@ -1145,6 +1154,12 @@ window.onload = () => {
             updateSequencerLoopLength(convertBeatsPerMinuteToLoopLengthInMillis(newTextInputValue, sequencer.rows[0].getNumberOfSubdivisions()))
             beatsPerMinute = newTextInputValue
         })
+    }
+
+    function initializeFlashcardTextInputValuesAndStyles(){
+        domElements.textInputs.flashcardTextInput.value = "[flashcards text will go here]"
+        domElements.textInputs.flashcardTextInput.style.top = "" + (sequencerVerticalOffset + 470) + "px"
+        domElements.textInputs.flashcardTextInput.style.left = "" + (sequencerHorizontalOffset) + "px"
     }
 
     function filterTextInputToInteger(newValue, oldValue, lowerBound, upperBound) {
