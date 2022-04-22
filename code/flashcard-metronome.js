@@ -320,11 +320,13 @@ window.onload = () => {
         if (paused) {
             currentTimeWithinCurrentLoop = mostRecentPauseTimeWithinLoop // updated for the sake of the on-screen time-tracker lines
         } else {
+            // after unpausing, we want to wait for the lookahead time window to elapse, so that notes that should happen immediately after unpausing have a chance to get scheduled.
             timeWaitedSoFarForLookAheadWindowToElapseAfterUnpausing = currentTime - mostRecentUnpauseTime
             if (timeWaitedSoFarForLookAheadWindowToElapseAfterUnpausing < LOOK_AHEAD_MILLIS) {
                 // console.log("still waiting... " + timeWaitedSoFarForLookAheadWindowToElapseAfterUnpausing + " millis have elapsed since last 'unpause' so far")
                 currentTimeWithinCurrentLoop = mostRecentPauseTimeWithinLoop
             } else {
+                // enough time has elapsed since the last unpause that we don't need to wait any extra time, we can just keep scheduling notes like normal
                 currentTimeWithinCurrentLoop = (currentTime - mostRecentUnpauseTime + mostRecentPauseTimeWithinLoop) % loopLengthInMillis
             }
             theoreticalStartTimeOfCurrentLoop = (currentTime - currentTimeWithinCurrentLoop) // no need to update if we are currently paused
@@ -1185,7 +1187,7 @@ window.onload = () => {
 
     // intialize the text that will start out in the flashcard text input box
     function initializeFlashcardTextInputValue() {
-        domElements.textInputs.flashcardTextInput.value = ["// flashcard prefixes: (all lines starting with two slashes // will be ignored)", "A", "A#", "Bb", "B", "C", "C#", "Db", "D", "Eb", "E", "F", "F#", "Gb", "G", "Ab", "A", "A#", "~ flashcard suffixes: (these begin after the first line that starts with a tilde ~ and you can use no suffixes by deleting this section)", " major 7", " minor 7", "7", " diminished 7", " augmented 7", " half-diminished 7"].join("\n")
+        domElements.textInputs.flashcardTextInput.value = ["// flashcard prefixes: (all lines starting with two slashes // will be ignored)", "Ab", "A", "A#", "Bb", "B", "C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#", "~ flashcard suffixes: (these begin after the first line that starts with a tilde ~ and you can use no suffixes by deleting this section)", " major 7", " minor 7", " 7", " minor major 7", " diminished 7", " augmented 7", " half-diminished 7", " 7 altered"].join("\n")
     }
 
     function initializeFlashcardTextInputStyles() {
