@@ -156,7 +156,9 @@ window.onload = () => {
     sequencer.rows[1].setNumberOfSubdivisions(1)
     sequencer.rows[1].setQuantization(true)
 
-    let allFlashcards = ["Card 1", "Card 2", "Card 3"]
+    initializeFlashcardTextInputValue()
+
+    let allFlashcards = parseFlashcardsFromString(domElements.textInputs.flashcardTextInput.value)
     let currentRemainingFlashcards = copyArray(allFlashcards)
     let indexOfNextFlashcardToShow = -1;
 
@@ -214,7 +216,8 @@ window.onload = () => {
     addShowAllFlashcardsBeforeRepeatingAnyCheckboxActionListeners()
     addShowNextFlashcardPreviewCheckboxActionListeners()
 
-    initializeFlashcardTextInputValuesAndStyles()
+    initializeFlashcardTextInputStyles()
+    initializeFlashcardTextInputActionListeners()
 
     adjustSettingsMenu()
 
@@ -241,6 +244,7 @@ window.onload = () => {
 
     // run any miscellaneous unit tests needed before starting main update loop
     testConfineNumberToBounds()
+    testParseFlashcardsFromString()
 
     // start main recursive update loop, where all state updates will happen
     requestAnimationFrameShim(draw)
@@ -272,6 +276,10 @@ window.onload = () => {
     let currentTimeWithinCurrentLoop = 0 // how many millis into the current loop are we?
     let theoreticalStartTimeOfCurrentLoop = 0 // calculate what time the current loop started at (or would have started at in theory, if we account for pauses)
     let paused = false // store whether sequencer is paused or not
+    // after unpausing, wait LOOK_AHEAD_WINDOW milliseconds before actually starting to move time forward.
+    // that way any notes that happen right after unpausing have time to get scheduled.
+    // the variable below is used to track how long we've waited since unpausing.
+    let timeWaitedSoFarForLookAheadWindowToElapseAfterUnpausing = 0
 
     /**
      * Next need to think through how to calculate total runtime excluding pauses, so that we can track total number of loops so far.
@@ -312,7 +320,13 @@ window.onload = () => {
         if (paused) {
             currentTimeWithinCurrentLoop = mostRecentPauseTimeWithinLoop // updated for the sake of the on-screen time-tracker lines
         } else {
-            currentTimeWithinCurrentLoop = (currentTime - mostRecentUnpauseTime + mostRecentPauseTimeWithinLoop) % loopLengthInMillis
+            timeWaitedSoFarForLookAheadWindowToElapseAfterUnpausing = currentTime - mostRecentUnpauseTime
+            if (timeWaitedSoFarForLookAheadWindowToElapseAfterUnpausing < LOOK_AHEAD_MILLIS) {
+                // console.log("still waiting... " + timeWaitedSoFarForLookAheadWindowToElapseAfterUnpausing + " millis have elapsed since last 'unpause' so far")
+                currentTimeWithinCurrentLoop = mostRecentPauseTimeWithinLoop
+            } else {
+                currentTimeWithinCurrentLoop = (currentTime - mostRecentUnpauseTime + mostRecentPauseTimeWithinLoop) % loopLengthInMillis
+            }
             theoreticalStartTimeOfCurrentLoop = (currentTime - currentTimeWithinCurrentLoop) // no need to update if we are currently paused
         }
 
@@ -419,7 +433,7 @@ window.onload = () => {
     }
 
     function scheduleNotesForCurrentTime(nextNoteToSchedule, sequencerRowIndex, currentTime, currentTimeWithinCurrentLoop, actualStartTimeOfCurrentLoop) {
-        let numberOfLoopsSoFar = Math.floor(currentTime / loopLengthInMillis) // mostly used to make sure we don't schedule the same note twice. this number doesn't account for pauses, but i think that's fine. todo: make sure that's fine
+        //let numberOfLoopsSoFar = Math.floor(currentTime / loopLengthInMillis) // mostly used to make sure we don't schedule the same note twice. this number doesn't account for pauses, but i think that's fine. todo: make sure that's fine
 
         /**
          * At the end of the loop sequence, the look-ahead window may wrap back around to the beginning of the loop.
@@ -442,9 +456,9 @@ window.onload = () => {
         while (nextNoteToSchedule !== null && nextNoteToSchedule.priority <= endTimeOfNotesToSchedule) {
             // keep iterating through notes and scheduling them as long as they are within the timeframe to schedule notes for.
             // don't schedule a note unless it hasn't been scheduled on this loop iteration and it goes after the current time (i.e. don't schedule notes in the past, just skip over them)
-            if (nextNoteToSchedule.priority >= currentTimeWithinCurrentLoop && numberOfLoopsSoFar > nextNoteToSchedule.data.lastScheduledOnIteration) {
+            if (nextNoteToSchedule.priority >= currentTimeWithinCurrentLoop && totalNumberOfLoopsSoFar > nextNoteToSchedule.data.lastScheduledOnIteration) {
                 scheduleDrumSample(actualStartTimeOfCurrentLoop + nextNoteToSchedule.priority, nextNoteToSchedule.data.sampleName)
-                nextNoteToSchedule.data.lastScheduledOnIteration = numberOfLoopsSoFar // record the last iteration that the note was played on to avoid duplicate scheduling within the same iteration
+                nextNoteToSchedule.data.lastScheduledOnIteration = totalNumberOfLoopsSoFar // record the last iteration that the note was played on to avoid duplicate scheduling within the same iteration
             }
             nextNoteToSchedule = nextNoteToSchedule.next
         }
@@ -453,7 +467,7 @@ window.onload = () => {
         // of the loop to the end of leftover look-ahead window time.
         let endTimeToScheduleUpToFromBeginningOfLoop = endTimeOfNotesToSchedule - loopLengthInMillis // calulate leftover time to schedule for from beginning of loop, e.g. from 0 to 7 millis from above example
         let actualStartTimeOfNextLoop = actualStartTimeOfCurrentLoop + loopLengthInMillis
-        let numberOfLoopsSoFarPlusOne = numberOfLoopsSoFar + 1
+        let numberOfLoopsSoFarPlusOne = totalNumberOfLoopsSoFar + 1
         if (endTimeToScheduleUpToFromBeginningOfLoop >= 0) {
             nextNoteToSchedule = sequencer.rows[sequencerRowIndex].notesList.head
             while (nextNoteToSchedule !== null && nextNoteToSchedule.priority <= endTimeToScheduleUpToFromBeginningOfLoop) {
@@ -1001,6 +1015,7 @@ window.onload = () => {
         if (paused) {
             paused = false
             mostRecentUnpauseTime = currentTime
+            timeWaitedSoFarForLookAheadWindowToElapseAfterUnpausing = 0;
             for (let shape of pauseButtonShapes) {
                 shape.fill = "transparent"
             }
@@ -1098,15 +1113,27 @@ window.onload = () => {
             pause()
         }
         mostRecentPauseTimeWithinLoop = 0
+        beatOfLastUpdate = -1
         totalRuntimeOfSequencerSoFar = 0
         totalRuntimeBeforeMostRecentPause = 0 
         totalRuntimeAfterMostRecentPause = 0
-        for (let nextNoteToScheduleForRow of nextNoteToScheduleForEachRow) {
-            nextNoteToScheduleForRow = null // reset next note to schedule. 'head' will get picked up on the next call to draw() 
+
+        for (let i = 0; i < nextNoteToScheduleForEachRow.length; i++) {
+            nextNoteToScheduleForEachRow[i] = null // reset next note to schedule. 'head' will get picked up on the next call to draw() 
         }
-        if (!wasPaused) {
-            unpause()
+
+        for (sequencerRow of sequencer.rows) {
+            let note = sequencerRow.notesList.head
+            while (note !== null) {
+                // reset 'last scheduled on iteration' for every note, so that notes will play even if we aren't technically on a new measure of the sequencer after restarting
+                note.data.lastScheduledOnIteration = NOTE_HAS_NEVER_BEEN_PLAYED;
+                note = note.next
+            }
         }
+
+        // if (!wasPaused) {
+        //     unpause()
+        // }
     }
 
     function resetFlashcards() {
@@ -1124,9 +1151,9 @@ window.onload = () => {
         currentFlashcardText.value = "";
         nextFlashcardPreviewText.value = "";
         cardsRemainingText.value = "Cards used: 0 / " + allFlashcards.length
-        if (!wasPaused) {
-            unpause()
-        }
+        // if (!wasPaused) {
+        //     unpause()
+        // }
     }
 
     function initializeTempoTextInputValuesAndStyles() {
@@ -1156,10 +1183,21 @@ window.onload = () => {
         })
     }
 
-    function initializeFlashcardTextInputValuesAndStyles(){
-        domElements.textInputs.flashcardTextInput.value = "[flashcards text will go here]"
+    // intialize the text that will start out in the flashcard text input box
+    function initializeFlashcardTextInputValue() {
+        domElements.textInputs.flashcardTextInput.value = ["// flashcard prefixes: (all lines starting with two slashes // will be ignored)", "A", "A#", "Bb", "B", "C", "C#", "Db", "D", "Eb", "E", "F", "F#", "Gb", "G", "Ab", "A", "A#", "~ flashcard suffixes: (these begin after the first line that starts with a tilde ~ and you can use no suffixes by deleting this section)", " major 7", " minor 7", "7", " diminished 7", " augmented 7", " half-diminished 7"].join("\n")
+    }
+
+    function initializeFlashcardTextInputStyles() {
         domElements.textInputs.flashcardTextInput.style.top = "" + (sequencerVerticalOffset + 470) + "px"
         domElements.textInputs.flashcardTextInput.style.left = "" + (sequencerHorizontalOffset) + "px"
+    }
+
+    function initializeFlashcardTextInputActionListeners() {
+        domElements.textInputs.flashcardTextInput.addEventListener('blur', (event) => {
+            allFlashcards = parseFlashcardsFromString(domElements.textInputs.flashcardTextInput.value)
+            resetFlashcardMetronome()
+        })
     }
 
     function filterTextInputToInteger(newValue, oldValue, lowerBound, upperBound) {
@@ -1336,6 +1374,145 @@ window.onload = () => {
          * See https://github.com/adamcogen/flashcard-metronome/issues/43
          */
         resetFlashcardMetronome()
+    }
+
+    function parseFlashcardsFromString(inputString, commentDelimeter="//", suffixesDelimeter="~") {
+        // convert the input string into an array with each line as its own array element, and remove an empty lines
+        lines = inputString.split("\n").filter(line => line !== '' );
+        // also remove all 'comment' lines (lines that start with the 'comment' delimeter), since the parser will ignore them
+        lines = lines.filter(line => !line.startsWith(commentDelimeter))
+        // start parsing the actual text of each line
+        let prefixes = []
+        let inSuffixesSection = false
+        let suffixes = []
+        for (line of lines) {
+            if (inSuffixesSection === false && line.startsWith(suffixesDelimeter)) {
+                /**
+                 * for the _first_ line that starts with the 'suffixes' delimeter,
+                 * note down that we're now in the 'suffixes' section of the inputs,
+                 * and skip the rest of that line (so any other text on the same line 
+                 * as the first appearance of the 'suffixes section' delimeter will 
+                 * be ignored, similar to a commment line).
+                 * subsequent appearances of the suffixes section delimeter will be
+                 * ignored, since we're already in the suffixes section. that will
+                 * be treated as normal flashcard contents.
+                 */
+                inSuffixesSection = true;
+                continue;
+            }
+            if (inSuffixesSection) {
+                suffixes.push(line)
+            } else {
+                prefixes.push(line)
+            }
+        }
+        // create and return the list of flashcards
+        let flashcards = []
+        if (prefixes.length > 0 && suffixes.length > 0){
+            /**
+             * if prefixes and suffixes are both present, generate 
+             * all possible combinations of prefix + suffix
+             */
+            for (prefix of prefixes) {
+                for (suffix of suffixes) {
+                    flashcards.push("" + prefix + suffix);
+                }
+            }
+        } else {
+            /**
+             * if either prefixes or suffixes are not present,
+             * just return all prefixes and suffixes -- one of these 
+             * lists is known to be empty, so this will just end up 
+             * being either all prefixes, or all suffixes.
+             * If the first non-comment line of the file is the suffix
+             * delimeter, we will end up with all suffixes and just 
+             * return those.
+             * 
+             * If there is no suffix delimeter at all or the last 
+             * non-comment line of the file is the suffix delimeter,
+             * we will end up with only prefixes and just return those.
+             * 
+             * Only suffixes is a weird case, but I'd rather just support
+             * it than deal with throwing errors for bad inputs.
+             */
+            flashcards.push(...prefixes)
+            flashcards.push(...suffixes)
+        }
+        return flashcards
+    }
+
+    // some basic happy-path unit testing for the flashcard parser
+    function testParseFlashcardsFromString(){
+        /**
+         * most basic tests: empty list, 1 item, multiple items. no comments or suffix delimeters
+         */
+        assertArraysEqual([], parseFlashcardsFromString(""), "most basic empty flashcard list")
+        assertArraysEqual(["card 1"], parseFlashcardsFromString("card 1"), "most basic single-item flashcard list")
+        assertArraysEqual(["card 1", "card 2", "card 3"], parseFlashcardsFromString("card 1\ncard 2\ncard 3"), "most basic multiplie-item flashcard list")
+        /**
+         * test trailing and extra whitespace 
+         */
+        assertArraysEqual([], parseFlashcardsFromString("\n"), "empty flashcard list with one newline")
+        assertArraysEqual([], parseFlashcardsFromString("\n\n\n\n\n\n\n\n"), "empty flashcard list with multiple newlines")
+        assertArraysEqual(["card 1"], parseFlashcardsFromString("\n\n\n\n\ncard 1\n\n\n\n\n\n"), "single-item flashcard list with extra newlines at beginning and end")
+        assertArraysEqual(["card 1", "card 2", "card 3"], parseFlashcardsFromString("\n\n\n\ncard 1\n\ncard 2\ncard 3\n\n\n\n"), "multiplie-item flashcard list with mutliple newlines at beginning, end, and throughout")
+        /**
+         * test including comments
+         */
+        assertArraysEqual([], parseFlashcardsFromString("//comment line"), "empty flashcard list with one comment line")
+        assertArraysEqual([], parseFlashcardsFromString("//comment line\n//another comment line\n//third comment line"), "empty flashcard list with multiple comment lines")
+        assertArraysEqual(["card 1"], parseFlashcardsFromString("//comment line\ncard 1"), "single-item flashcard list starting with one comment line")
+        assertArraysEqual(["card 1"], parseFlashcardsFromString("card 1\n//comment line"), "single-item flashcard list ending with one comment line")
+        assertArraysEqual(["card 1", "card 2", "card 3"], parseFlashcardsFromString("//comment line\n//second comment line\ncard 1\ncard 2\ncard 3\n//third comment line\n//fourth comment line"), "multiplie-item flashcard list starting and ending with multiple comment lines")
+        assertArraysEqual(["card 1", "card 2", "card 3"], parseFlashcardsFromString("//comment line\n//second comment line\ncard 1\n//thid comment line\n//fourth comment line\ncard 2\n//fifth comment line\ncard 3\n//sixth comment line\n//seventh comment line"), "multiplie-item flashcard list starting and ending with multiple comment lines, and with multiple comment lines throught")
+        /**
+         * combine extra and trailing newlines with comment lines
+         */
+        assertArraysEqual([], parseFlashcardsFromString("\n\n\n\n\n//comment line\n\n\n//another comment line\n//third comment line\n\n\n\n"), "empty flashcard list with multiple comment lines and multiple extra newlines at beginning, end, and throughout")
+        assertArraysEqual(["card 1", "card 2", "card 3"], parseFlashcardsFromString("\n\n\n\n//comment line\n\n\n//second comment line\ncard 1\n\n\n\n\n\n//thid comment line\n//fourth comment line\ncard 2\n//fifth comment line\n\n\n\ncard 3\n\n\n\n\n\n//sixth comment line\n//seventh comment line\n\n\n\n\n\n\n\n"), "multiplie-item flashcard list starting and ending with multiple comment lines, and with multiple comment lines throught, and with extra newlines at beginning, end, and throughout")
+        /**
+         * test basic prefix + suffix parsing
+         */
+        assertArraysEqual(["card 1"], parseFlashcardsFromString("card \n~\n1"), "most basic single-item prefix + suffix parsing flashcard list")
+        assertArraysEqual(["card 1", "card 2", "card 3"], parseFlashcardsFromString("card \n~\n1\n2\n3"), "basic multiple-item prefix + suffix parsing flashcard list. one prefix with multiple suffixes.")
+        assertArraysEqual(["card 1", "card 2", "card 3"], parseFlashcardsFromString("card 1\ncard 2\ncard 3\n~ this text should be ignored"), "basic multiple-item prefix + suffix parsing flashcard list. multiple prefixes with an empty suffixes list, and also extra text on the suffix delimeter line.")
+        assertArraysEqual(["card 1", "flashcard 1", "item 1"], parseFlashcardsFromString("card \nflashcard \nitem \n~\n1"), "basic multiple-item prefix + suffix parsing flashcard list. multiple prefixes with one suffix.")
+        assertArraysEqual(["card 1", "card 2", "card 3", "flashcard 1", "flashcard 2", "flashcard 3", "item 1", "item 2", "item 3"], parseFlashcardsFromString("card \nflashcard \nitem \n~\n1\n2\n3"), "basic multiple-item prefix + suffix parsing flashcard list. multiple prefixes with multiple suffixes.")
+        assertArraysEqual(["card 1"], parseFlashcardsFromString("card \n~ this text should be ignored\n1"), "basic single-item prefix + suffix parsing flashcard list. add extra text to suffix delimeter line.")
+        assertArraysEqual(["card 1", "card 2", "card 3", "flashcard 1", "flashcard 2", "flashcard 3", "item 1", "item 2", "item 3"], parseFlashcardsFromString("card \nflashcard \nitem \n~ this text should be ignored\n1\n2\n3"), "basic multiple-item prefix + suffix parsing flashcard list. multiple prefixes with multiple suffixes. add extra text to suffix delimeter line.")
+        /**
+         * test prefix + suffix parsing with comments and extra newlines
+         */
+        assertArraysEqual(["card 1", "card 2", "card 3", "flashcard 1", "flashcard 2", "flashcard 3", "item 1", "item 2", "item 3"], parseFlashcardsFromString("\n\n\n\n\n\ncard \n\nflashcard \n\n\n\nitem \n\n\n~\n\n\n\n1\n\n\n\n2\n3\n\n\n\n\n"), "multiple-item prefix + suffix parsing flashcard list. multiple prefixes with multiple suffixes. also include extra newlines at beginning, end, and throughout.")
+        assertArraysEqual(["card 1", "card 2", "card 3", "flashcard 1", "flashcard 2", "flashcard 3", "item 1", "item 2", "item 3"], parseFlashcardsFromString("//comment 1\n//comment 2\ncard \nflashcard \n//comment 3\nitem \n//comment 4\n//comment 5\n~\n//comment 6\n//comment 7   \n1\n//comment 8\n2\n3\n//comment 9\n//comment 10"), "multiple-item prefix + suffix parsing flashcard list. multiple prefixes with multiple suffixes. also include comments at beginning, end, and throughout.")
+        assertArraysEqual(["card 1", "card 2", "card 3", "flashcard 1", "flashcard 2", "flashcard 3", "item 1", "item 2", "item 3"], parseFlashcardsFromString("\n\n\n\n\n//comment 1\n\n\n//comment 2\n\ncard \n\nflashcard \n//comment 3\nitem \n\n\n\n//comment 4\n//comment 5\n\n~\n\n\n//comment 6\n//comment 7   \n\n\n1\n//comment 8\n2\n3\n//comment 9\n\n\n\n\n\n//comment 10\n\n\n\n\n"), "multiple-item prefix + suffix parsing flashcard list. multiple prefixes with multiple suffixes. also include extra newlines and comments at beginning, end, and throughout.")
+        assertArraysEqual(["card 1", "card 2", "card 3", "flashcard 1", "flashcard 2", "flashcard 3", "item 1", "item 2", "item 3"], parseFlashcardsFromString("\n\n\n\n\n//comment 1\n\n\n//comment 2\n\ncard \n\nflashcard \n//comment 3\nitem \n\n\n\n//comment 4\n//comment 5\n\n~this text should be ignored\n\n\n//comment 6\n//comment 7   \n\n\n1\n//comment 8\n2\n3\n//comment 9\n\n\n\n\n\n//comment 10\n\n\n\n\n"), "multiple-item prefix + suffix parsing flashcard list. multiple prefixes with multiple suffixes. also include extra newlines and comments at beginning, end, and throughout. add extra text to suffix delimeter line.")
+        /**
+         * test some suffix-only lists
+         */
+        assertArraysEqual([], parseFlashcardsFromString("~"), "empty suffix-only flashcard list")
+        assertArraysEqual([], parseFlashcardsFromString("~ this text should be ignored"), "empty suffix-only flashcard list with extra text on suffix delimeter line")
+        assertArraysEqual([], parseFlashcardsFromString("\n\n//comment 1\n~\n\n//comment 2\n\n\n"), "empty suffix-only flashcard list with comments and extra newlines")
+        assertArraysEqual(["card 1"], parseFlashcardsFromString("~\ncard 1"), "most basic single-item suffix-only flashcard list")
+        assertArraysEqual(["card 1"], parseFlashcardsFromString("\n\n\n\n//comment 1\n//comment 2\n\n~\n//comment 3\n\ncard 1\n\n\n"), "basic single-item suffix-only flashcard list with comments and extra newlines")
+        assertArraysEqual(["card 1", "card 2", "card 3"], parseFlashcardsFromString("~\ncard 1\ncard 2\ncard 3"), "most basic multiple-item suffix-only flashcard list")
+        assertArraysEqual(["card 1", "card 2", "card 3"], parseFlashcardsFromString("\n\n\n\n//comment 1\n~\n//comment 2\n//comment 3\ncard 1\n//comment 4\n//comment 5\ncard 2\ncard 3\n//comment 6\n\n\n\n"), "basic multiple-item suffix-only flashcard list with comments and extra newlines")
+        /**
+         * test prefixes + suffixes, with comments, extra newlines, _and multiple suffix delimeter lines_
+         */
+         assertArraysEqual(["card ~ 1", "card 2", "card  ~ 3", "flashcard ~ 1", "flashcard 2", "flashcard  ~ 3", "item ~ 1", "item 2", "item  ~ 3"], parseFlashcardsFromString("\n\n\n\n\n//comment 1\n\n\n//comment 2\n\ncard \n\nflashcard \n//comment 3\nitem \n\n\n\n//comment 4\n//comment 5\n\n~this text should be ignored\n\n\n//comment 6\n//comment 7   \n\n\n~ 1\n//comment 8\n2\n ~ 3\n//comment 9\n\n\n\n\n\n//comment 10\n\n\n\n\n"), "multiple-item prefix + suffix parsing flashcard list. multiple prefixes with multiple suffixes. include extra newlines and comments throughout. add extra text to suffix delimeter line. include multple suffix delimeter lines")
+    }
+
+    function assertArraysEqual(expectedArray, actualArray, message) {
+        let failed = false;
+        if (expectedArray.length !== actualArray.length) {
+            throw "array equality assertion failed: '" + message + "'. array lengths were not the same. expected array: '" + expectedArray + "'; actual array: '" + actualArray + "'. expected array length: " + expectedArray.length + "; actual array length: " + actualArray.length + ""
+        }
+        for (let i = 0; i < actualArray.length; i++) {
+            if (actualArray[i] !== expectedArray[i]) {
+                throw "array equality assertion failed: '" + message + "'. expected array: '" + expectedArray + "'; actual array: '" + actualArray + "'"
+            }
+        }
     }
 
     // given a number and an upper and lower bound, confine the number to be between the bounds.

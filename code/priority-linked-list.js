@@ -286,7 +286,7 @@ class PriorityLinkedList {
 // basic 'assert equals' method, which throws the given message if the two given values arent equal (===) to each other
 function assertEquals(expected, actual, message) {
     if (expected !== actual){
-        throw "assertion failed: '" + message + "'. expected: '" + expected + "'; actual '" + actual + "'"
+        throw "assertion failed: '" + message + "'. expected: '" + expected + "'; actual: '" + actual + "'"
     }
 }
 
