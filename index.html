@@ -14,6 +14,17 @@
                 background-color: #d4d4d4; /* somewhere between c4c4c4 and e4e4e4 */ 
             }
 
+            #everything { /* format the div that contains all the other divs */
+                position: absolute;
+                margin: 0 auto;
+                margin-left: auto;
+                margin-right: auto;
+                left: 0;
+                right: 0;
+                width: 245px;
+                transform: translate(-50%, 0%);
+            }
+
             textarea { /* format all textarea objects */
                 font-size: 20px;
                 resize: none; /* switch to 'horizontal' to only allow for horizontal resizing */
@@ -54,22 +65,33 @@
                 text-align: left;
             }
 
+            #settings-icon {
+                position: absolute;
+                top: 275px;
+                left: 395px;
+                height: 38px;
+                width: 38px;
+            }
+
         </style>
 
     </head>
     
     <body>
-        <div id="draw-shapes"></div>
-        <!-- Load drum machine source code -->
-        <script src='code/priority-linked-list.js'></script>
-        <script src='code/other-class-definitions.js'></script>
-        <script src='code/flashcard-metronome.js'></script>
-        <div id="tempo-text-inputs">
-            <textarea id="text-input-loop-length-millis" rows="1" cols="3"></textarea>
-        </div>
-        <div id="subdivision-text-inputs"></div>
-        <div id="flashcard-text-input-div">
-            <textarea id="flashcard-text-input" rows="8" cols="30" wrap="off"></textarea>
+        <div id="everything">
+            <div id="draw-shapes"></div>
+            <!-- Load drum machine source code -->
+            <script src='code/priority-linked-list.js'></script>
+            <script src='code/other-class-definitions.js'></script>
+            <script src='code/flashcard-metronome.js'></script>
+            <div id="tempo-text-inputs">
+                <textarea id="text-input-loop-length-millis" rows="1" cols="3"></textarea>
+            </div>
+            <div id="subdivision-text-inputs"></div>
+            <div id="flashcard-text-input-div">
+                <textarea id="flashcard-text-input" rows="8" cols="30" wrap="off"></textarea>
+            </div>
+            <img src="./assets/settings-icon.png" id="settings-icon" draggable="false"/>
         </div>
     </body>
 </html>

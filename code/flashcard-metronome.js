@@ -15,6 +15,9 @@ window.onload = () => {
         textInputs: {
             loopLengthMillis: document.getElementById('text-input-loop-length-millis'),
             flashcardTextInput: document.getElementById('flashcard-text-input'),
+        },
+        images: {
+            settingsIcon: document.getElementById('settings-icon'),
         }
     }
 
@@ -48,12 +51,8 @@ window.onload = () => {
     let audioContext = new AudioContext();
 
     // wait until the first click before resuming the audio context (this is required by Chrome browser)
-    let audioContextStarted = false
     window.onclick = () => {
-        if (!audioContextStarted) {
-            audioContext.resume()
-            audioContextStarted = true
-        }
+        audioContext.resume()
     }
 
     /**
@@ -131,14 +130,14 @@ window.onload = () => {
     let subdivisionTextInputHorizontalPadding = 10
     let subdivisionTextInputVerticalPadding = -17
     // 'repeat flashcards?' checkbox position
-    let showAllFlashcardsBeforeRepeatingAnyCheckboxVerticalPosition = sequencerVerticalOffset + 275
+    let showAllFlashcardsBeforeRepeatingAnyCheckboxVerticalPosition = sequencerVerticalOffset + 400
     let showAllFlashcardsBeforeRepeatingAnyCheckboxHorizontalPosition = sequencerHorizontalOffset + 340
     // 'show next flashcard preview?' checkbox position
     let showNextFlashcardPreviewCheckboxVerticalPosition = sequencerVerticalOffset + 320
     let showNextFlashcardPreviewCheckboxHorizontalPosition = sequencerHorizontalOffset + 320
     // 'show each flashcard for how many measures?' text input position
-    let showEachFlashcardForHowManyMeasuresTextInputVerticalPosition = sequencerVerticalOffset + 400
-    let showEachFlashcardForHowManyMeasuresTextInputHorizontalPosition = sequencerHorizontalOffset + 330
+    let showEachFlashcardForHowManyMeasuresTextInputVerticalPosition = sequencerVerticalOffset + 275
+    let showEachFlashcardForHowManyMeasuresTextInputHorizontalPosition = sequencerHorizontalOffset + 320
     // 'show next flashcard preview on which beat?' text input position
     let showPreviewOnWhichBeatTextInputVerticalPosition = sequencerVerticalOffset + 355
     let showPreviewOnWhichBeatTextInputHorizontalPosition = sequencerHorizontalOffset + 290
@@ -163,7 +162,7 @@ window.onload = () => {
     let indexOfNextFlashcardToShow = -1;
 
     let numberOfMeasuresToShowEachFlashcardFor = 2;
-    let beatNumberToShowNextFlashcardPreviewOn = 0;
+    let beatNumberToShowNextFlashcardPreviewOn = 3;
     let showPreviewOfNextFlashcard = true;
 
     let showSettingsMenu = false;
@@ -184,7 +183,7 @@ window.onload = () => {
     let showAllFlashcardsBeforeRepeatingAnyCheckboxText = initializeLabelText("show all flashcards before repeating?", showAllFlashcardsBeforeRepeatingAnyCheckboxHorizontalPosition - 5, showAllFlashcardsBeforeRepeatingAnyCheckboxVerticalPosition + 14, "right") // a label next to the 'repeat flashcards?' checkbox
     let showNextFlashcardPreviewCheckboxText = initializeLabelText("show preview of next flashcard?", showNextFlashcardPreviewCheckboxHorizontalPosition - 5, showNextFlashcardPreviewCheckboxVerticalPosition + 14, "right")
     let showPreviewOnWhichBeatText = initializeLabelText("show preview on which beat?", showPreviewOnWhichBeatTextInputHorizontalPosition - 5, showPreviewOnWhichBeatTextInputVerticalPosition + 17, "right")
-    let showEachFlashcardForHowManyMeasuresText = initializeLabelText("show cards for how many measures?", showEachFlashcardForHowManyMeasuresTextInputHorizontalPosition - 5, showEachFlashcardForHowManyMeasuresTextInputVerticalPosition + 17, "right")
+    let showEachFlashcardForHowManyMeasuresText = initializeLabelText("show card for how many measures?", showEachFlashcardForHowManyMeasuresTextInputHorizontalPosition - 5, showEachFlashcardForHowManyMeasuresTextInputVerticalPosition + 17, "right")
     let currentFlashcardLabelText = initializeLabelText(">", sequencerHorizontalOffset - 10, sequencerVerticalOffset - 90, "left")
     let currentFlashcardText = initializeLabelText("", sequencerHorizontalOffset + 10, sequencerVerticalOffset - 90, "left")
     let nextFlashcardPreviewText = initializeLabelText("", sequencerHorizontalOffset + 10, sequencerVerticalOffset - 60, "left")
@@ -865,7 +864,7 @@ window.onload = () => {
         resetButton.stroke = sequencerAndToolsLineColor
         resetButton.fill = 'transparent'
 
-        let resetButtonText = initializeLabelText("<<", resetButtonHorizontalOffset + 22, resetButtonVerticalOffset + 22, "center")
+        let resetButtonText = initializeLabelText("<<", resetButtonHorizontalOffset + 23, resetButtonVerticalOffset + 22, "center")
         resetButtonText.fill = sequencerAndToolsLineColor
         resetButtonText.stroke = 'transparent'
         resetButtonText.size = 30
@@ -901,7 +900,7 @@ window.onload = () => {
         tapTempoButton.stroke = sequencerAndToolsLineColor
         tapTempoButton.fill = 'transparent'
 
-        let tapTempoButtonText = initializeLabelText("TAP", tapTempoButtonHorizontalOffset + 24, tapTempoButtonVerticalOffset + 25, "center")
+        let tapTempoButtonText = initializeLabelText("TAP", tapTempoButtonHorizontalOffset + 25, tapTempoButtonVerticalOffset + 25, "center")
         tapTempoButtonText.fill = sequencerAndToolsLineColor
         tapTempoButtonText.stroke = 'transparent'
         tapTempoButtonText.size = 23
@@ -935,10 +934,11 @@ window.onload = () => {
         buttonRectangle.stroke = sequencerAndToolsLineColor
         buttonRectangle.fill = 'transparent'
 
-        let buttonText = initializeLabelText("-", settingsButtonHorizontalOffset + 24, settingsButtonVerticalOffset + 25, "center")
+        let buttonText = initializeLabelText("", settingsButtonHorizontalOffset + 24, settingsButtonVerticalOffset + 25, "center")
         buttonText.fill = sequencerAndToolsLineColor
         buttonText.stroke = 'transparent'
         buttonText.size = 23
+
         return [buttonRectangle, buttonText]
     }
 
@@ -955,6 +955,18 @@ window.onload = () => {
             })
             shape._renderer.elem.style.cursor = "pointer";
         }
+
+        let icon = domElements.images.settingsIcon
+        icon.addEventListener('click', (event) => {
+            showSettingsMenu = !showSettingsMenu
+            if (showSettingsMenu) {
+                settingsButtonShapes[0].fill = clickedButtonColor
+            } else {
+                settingsButtonShapes[0].fill = 'transparent'
+            }
+            adjustSettingsMenu();
+        })
+        icon.style.cursor = "pointer";
     }
 
     function adjustSettingsMenu() {
@@ -1101,6 +1113,9 @@ window.onload = () => {
             newTextInputValue = parseInt(newTextInputValue)
             newTextInputValue = confineNumberToBounds(newTextInputValue, 1, 999)
             textbox.value = newTextInputValue
+            if (newTextInputValue === numberOfMeasuresToShowEachFlashcardFor) {
+                return
+            }
             numberOfMeasuresToShowEachFlashcardFor = newTextInputValue
             resetFlashcardMetronome()
         });
@@ -1197,7 +1212,11 @@ window.onload = () => {
 
     function initializeFlashcardTextInputActionListeners() {
         domElements.textInputs.flashcardTextInput.addEventListener('blur', (event) => {
+            oldFlashcards = copyArray(allFlashcards)
             allFlashcards = parseFlashcardsFromString(domElements.textInputs.flashcardTextInput.value)
+            if (arrayEquals(oldFlashcards, allFlashcards)) {
+                return;
+            }
             resetFlashcardMetronome()
         })
     }
@@ -1276,6 +1295,9 @@ window.onload = () => {
                 newTextInputValue = parseInt(newTextInputValue) // we should only allow ints here for now, since that is what the existing logic is designed to handle
                 newTextInputValue = confineNumberToBounds(newTextInputValue, 1, maximumAllowedNumberOfSubdivisions)
                 subdivisionTextInput.value = newTextInputValue
+                if (newTextInputValue === sequencer.rows[rowIndex].getNumberOfSubdivisions()) {
+                    return
+                }
                 updateNumberOfSubdivisionsForRow(newTextInputValue, rowIndex)
             })
         }
@@ -1506,7 +1528,6 @@ window.onload = () => {
     }
 
     function assertArraysEqual(expectedArray, actualArray, message) {
-        let failed = false;
         if (expectedArray.length !== actualArray.length) {
             throw "array equality assertion failed: '" + message + "'. array lengths were not the same. expected array: '" + expectedArray + "'; actual array: '" + actualArray + "'. expected array length: " + expectedArray.length + "; actual array length: " + actualArray.length + ""
         }
@@ -1515,6 +1536,18 @@ window.onload = () => {
                 throw "array equality assertion failed: '" + message + "'. expected array: '" + expectedArray + "'; actual array: '" + actualArray + "'"
             }
         }
+    }
+
+    function arrayEquals(array0, array1) {
+        if (array0.length !== array1.length) {
+            return false;
+        }
+        for (let i = 0; i < array0.length; i++) {
+            if (array0[i] !== array1[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     // given a number and an upper and lower bound, confine the number to be between the bounds.
