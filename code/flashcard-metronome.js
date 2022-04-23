@@ -429,7 +429,11 @@ window.onload = () => {
         // show the preview of the next flashcard
         if ((measureNumber % numberOfMeasuresToShowEachFlashcardFor === numberOfMeasuresToShowEachFlashcardFor - 1) && beatNumber >= beatNumberToShowNextFlashcardPreviewOn) {
             if (beatNumber === beatNumberToShowNextFlashcardPreviewOn) {
-                indexOfNextFlashcardToShow = getRandomInteger(currentRemainingFlashcards.length)
+                if (randomizeFlashcardOrder) {
+                    indexOfNextFlashcardToShow = getRandomInteger(currentRemainingFlashcards.length);
+                } else {
+                    indexOfNextFlashcardToShow = 0;
+                }
                 if (showPreviewOfNextFlashcard) {
                     nextFlashcardPreviewText.value = currentRemainingFlashcards[indexOfNextFlashcardToShow];
                 }
