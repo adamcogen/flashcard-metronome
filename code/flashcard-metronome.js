@@ -349,6 +349,8 @@ window.onload = () => {
         }
         totalRuntimeOfSequencerSoFar = totalRuntimeBeforeMostRecentPause + totalRuntimeAfterMostRecentPause
         totalNumberOfLoopsSoFar = Math.floor(totalRuntimeOfSequencerSoFar / loopLengthInMillis);
+        // add this value so that the count-in will always be shown for one measure:
+        totalNumberOfLoopsSoFar += numberOfMeasuresToShowEachFlashcardFor - 1;
 
         // debug calculation of beat and measure number
         // currentBeatNumber.value = "current beat: " + currentBeatWithinLoop + "";
