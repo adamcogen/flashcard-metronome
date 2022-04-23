@@ -130,8 +130,8 @@ window.onload = () => {
     let subdivisionTextInputHorizontalPadding = 10
     let subdivisionTextInputVerticalPadding = -17
     // 'repeat flashcards?' checkbox position
-    let showAllFlashcardsBeforeRepeatingAnyCheckboxVerticalPosition = sequencerVerticalOffset + 400
-    let showAllFlashcardsBeforeRepeatingAnyCheckboxHorizontalPosition = sequencerHorizontalOffset + 340
+    let showAllFlashcardsBeforeRepeatingAnyCheckboxVerticalPosition = sequencerVerticalOffset + 670
+    let showAllFlashcardsBeforeRepeatingAnyCheckboxHorizontalPosition = sequencerHorizontalOffset + 350
     // 'show next flashcard preview?' checkbox position
     let showNextFlashcardPreviewCheckboxVerticalPosition = sequencerVerticalOffset + 320
     let showNextFlashcardPreviewCheckboxHorizontalPosition = sequencerHorizontalOffset + 320
@@ -141,6 +141,9 @@ window.onload = () => {
     // 'show next flashcard preview on which beat?' text input position
     let showPreviewOnWhichBeatTextInputVerticalPosition = sequencerVerticalOffset + 355
     let showPreviewOnWhichBeatTextInputHorizontalPosition = sequencerHorizontalOffset + 290
+    // 'randomize order?' checkbox position
+    let randomizeFlashcardOrderCheckboxVerticalPosition = sequencerVerticalOffset + 640
+    let randomizeFlashcardOrderCheckboxHorizontalPosition = sequencerHorizontalOffset + 270
 
     // these will be used to slowly change colors of buttons that are pressed
     let clickButtonsForHowManyMilliseconds = 200;
@@ -164,6 +167,7 @@ window.onload = () => {
     let numberOfMeasuresToShowEachFlashcardFor = 2;
     let beatNumberToShowNextFlashcardPreviewOn = 3;
     let showPreviewOfNextFlashcard = true;
+    let randomizeFlashcardOrder = true;
 
     let showSettingsMenu = false;
 
@@ -193,7 +197,9 @@ window.onload = () => {
     // let measureNumberLabel = initializeLabelText("measure:", sequencerHorizontalOffset + sequencerWidth, sequencerVerticalOffset - 20, "left")
     // measureNumberLabel.size = 12
     let numberOfMeasuresCardHasBeenShownForSoFarText = initializeLabelText("0 / " + numberOfMeasuresToShowEachFlashcardFor, sequencerHorizontalOffset + sequencerWidth, sequencerVerticalOffset, "left")
-    let flashcardTextInputLabel = initializeLabelText("flashcards:", sequencerHorizontalOffset + 140, sequencerVerticalOffset + 450, "left")
+    let flashcardTextInputLabel = initializeLabelText("flashcards:", sequencerHorizontalOffset + 140, sequencerVerticalOffset + 405, "left")
+    let randomizeFlashcardOrderCheckbox = initializeCheckbox(randomizeFlashcardOrderCheckboxVerticalPosition, randomizeFlashcardOrderCheckboxHorizontalPosition)
+    let randomizeFlashcardOrderText = initializeLabelText("randomize order?", randomizeFlashcardOrderCheckboxHorizontalPosition - 5, randomizeFlashcardOrderCheckboxVerticalPosition + 14, "right")
 
     two.update(); // this initial 'update' creates SVG '_renderer' properties for our shapes that we can add action listeners to, so it needs to go here
 
@@ -214,6 +220,7 @@ window.onload = () => {
     addSettingsButtonActionListeners()
     addShowAllFlashcardsBeforeRepeatingAnyCheckboxActionListeners()
     addShowNextFlashcardPreviewCheckboxActionListeners()
+    addRandomizeFlashcardOrderCheckboxActionListeners()
 
     initializeFlashcardTextInputStyles()
     initializeFlashcardTextInputActionListeners()
@@ -986,6 +993,8 @@ window.onload = () => {
             showEachFlashcardForHowManyMeasureTextInput.style.display = "block"
             domElements.textInputs.flashcardTextInput.style.display = "block"
             flashcardTextInputLabel.fill = "black"
+            randomizeFlashcardOrderText.fill = "black"
+            randomizeFlashcardOrderCheckbox.style.display = "block"
         } else {
             // hide the settings menu
             numberOfBeatsText.fill = "transparent"
@@ -1002,6 +1011,8 @@ window.onload = () => {
             showEachFlashcardForHowManyMeasureTextInput.style.display = "none"
             domElements.textInputs.flashcardTextInput.style.display = "none"
             flashcardTextInputLabel.fill = "transparent"
+            randomizeFlashcardOrderText.fill = "transparent"
+            randomizeFlashcardOrderCheckbox.style.display = "none"
         }
     }
 
@@ -1075,6 +1086,23 @@ window.onload = () => {
                 showPreviewOnWhichBeatText.fill = "gray"
                 showPreviewOnWhichBeatTextInput.disabled = true
                 showPreviewOfNextFlashcard = false
+            }
+        })
+    }
+
+    function addRandomizeFlashcardOrderCheckboxActionListeners() {
+        randomizeFlashcardOrderCheckbox.checked = randomizeFlashcardOrder;
+        randomizeFlashcardOrderCheckbox.addEventListener('click', (event) => {
+            if (randomizeFlashcardOrderCheckbox.checked) {
+                randomizeFlashcardOrder = true;
+                showAllFlashcardsBeforeRepeatingAnyCheckbox.disabled = false;
+                showAllFlashcardsBeforeRepeatingAnyCheckboxText.fill = "black";
+                resetFlashcards();
+            } else {
+                randomizeFlashcardOrder = false;
+                showAllFlashcardsBeforeRepeatingAnyCheckbox.disabled = true;
+                showAllFlashcardsBeforeRepeatingAnyCheckboxText.fill = "gray";
+                resetFlashcards();
             }
         })
     }
@@ -1206,7 +1234,7 @@ window.onload = () => {
     }
 
     function initializeFlashcardTextInputStyles() {
-        domElements.textInputs.flashcardTextInput.style.top = "" + (sequencerVerticalOffset + 470) + "px"
+        domElements.textInputs.flashcardTextInput.style.top = "" + (sequencerVerticalOffset + 425) + "px"
         domElements.textInputs.flashcardTextInput.style.left = "" + (sequencerHorizontalOffset) + "px"
     }
 
