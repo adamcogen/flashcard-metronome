@@ -34,8 +34,8 @@ window.onload = () => {
 
     // load all sound files
     let samples = {}
-    samples[HIGH] = new SequencerNoteType(loadSample(HIGH, SOUND_FILES_PATH + HIGH + WAV_EXTENSION), '#1b617a')
-    samples[MID] = new SequencerNoteType(loadSample(MID, SOUND_FILES_PATH + MID + WAV_EXTENSION), '#bd3b07')
+    samples[HIGH] = new SequencerNoteType(loadSample(HIGH, SOUND_FILES_PATH + HIGH + WAV_EXTENSION), '#bd3b07')
+    samples[MID] = new SequencerNoteType(loadSample(MID, SOUND_FILES_PATH + MID + WAV_EXTENSION), '#1b617a')
     samples[LOW] = new SequencerNoteType(loadSample(LOW, SOUND_FILES_PATH + LOW + WAV_EXTENSION), '#b58f04')
     samples[SILENCE] = new SequencerNoteType(loadSample(SILENCE, SOUND_FILES_PATH + SILENCE + WAV_EXTENSION), 'transparent')
 
