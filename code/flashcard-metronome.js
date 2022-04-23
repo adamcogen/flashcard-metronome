@@ -252,9 +252,6 @@ window.onload = () => {
     testConfineNumberToBounds()
     testParseFlashcardsFromString()
 
-    // start main recursive update loop, where all state updates will happen
-    requestAnimationFrameShim(draw)
-
     /**
      * initialize some variables that will be used for timekeeping, managing of pauses, etc.
      */
@@ -314,6 +311,9 @@ window.onload = () => {
     let loopNumberOfLastUpdate = -1;
 
     pause()
+
+    // start main recursive update loop, where all state updates will happen
+    requestAnimationFrameShim(draw)
 
     /**
      * end of main logic, start of function definitions.
