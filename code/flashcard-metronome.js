@@ -792,6 +792,8 @@ window.onload = () => {
         // label.stroke = "white";
         label.size = 20;
         label.alignment = alignment
+        label.family = "Arial, sans-serif"
+        // label.family = "Courier New, monospace"
         two.add(label);
         two.update();
         // prevent text selection
