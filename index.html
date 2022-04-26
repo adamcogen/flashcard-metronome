@@ -76,6 +76,17 @@
                 width: 38px;
             }
 
+            select {
+                font-size: 20px;
+                background-color: transparent;
+                border-width: 3px;
+                -webkit-border-radius: 5px;
+                -moz-border-radius: 5px;
+                border-radius: 5px;
+                font-family: Arial, sans-serif;
+                position: absolute;
+            }
+
         </style>
 
     </head>
@@ -91,6 +102,11 @@
                 <textarea id="text-input-loop-length-millis" rows="1" cols="3"></textarea>
             </div>
             <div id="subdivision-text-inputs"></div>
+            <div id="flashcard-decks-selector-div">
+                <select name="flashcard-decks-selector" id="flashcard-decks-selector">
+                    <option value="none" selected disabled></option>
+                </select>
+            </div>
             <div id="flashcard-text-input-div">
                 <textarea id="flashcard-text-input" rows="8" cols="36" wrap="off"></textarea>
             </div>

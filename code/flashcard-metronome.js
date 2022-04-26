@@ -18,6 +18,9 @@ window.onload = () => {
         },
         images: {
             settingsIcon: document.getElementById('settings-icon'),
+        },
+        dropdowns: {
+            flashcardDecksDropdown: document.getElementById('flashcard-decks-selector'),
         }
     }
 
@@ -144,6 +147,9 @@ window.onload = () => {
     // 'randomize order?' checkbox position
     let randomizeFlashcardOrderCheckboxVerticalPosition = sequencerVerticalOffset + 640
     let randomizeFlashcardOrderCheckboxHorizontalPosition = sequencerHorizontalOffset + 270
+    // flashcard input textbox label / dropdown selector position
+    let flashcardTextInputLabelVerticalPosition = sequencerVerticalOffset + 409
+    let flashcardTextInputLabelHorizontalPosition = sequencerHorizontalOffset - 2
 
     // these will be used to slowly change colors of buttons that are pressed
     let clickButtonsForHowManyMilliseconds = 200;
@@ -202,7 +208,7 @@ window.onload = () => {
     // let measureNumberLabel = initializeLabelText("measure:", sequencerHorizontalOffset + sequencerWidth, sequencerVerticalOffset - 20, "left")
     // measureNumberLabel.size = 12
     let numberOfMeasuresCardHasBeenShownForSoFarText = initializeLabelText("0 / " + numberOfMeasuresToShowEachFlashcardFor, sequencerHorizontalOffset + sequencerWidth, sequencerVerticalOffset, "left")
-    let flashcardTextInputLabel = initializeLabelText("flashcards:", sequencerHorizontalOffset + 140, sequencerVerticalOffset + 405, "left")
+    let flashcardTextInputLabel = initializeLabelText("flashcards:", flashcardTextInputLabelHorizontalPosition, flashcardTextInputLabelVerticalPosition, "left")
     let randomizeFlashcardOrderCheckbox = initializeCheckbox(randomizeFlashcardOrderCheckboxVerticalPosition, randomizeFlashcardOrderCheckboxHorizontalPosition)
     let randomizeFlashcardOrderText = initializeLabelText("randomize order?", randomizeFlashcardOrderCheckboxHorizontalPosition - 5, randomizeFlashcardOrderCheckboxVerticalPosition + 14, "right")
 
@@ -229,6 +235,42 @@ window.onload = () => {
 
     initializeFlashcardTextInputStyles()
     initializeFlashcardTextInputActionListeners()
+
+    let premadeFlashcardDecks = [
+        {
+            name: "notes - circle of fifths",
+            cards: ["C", "G", "D", "A", "E", "B", "F# / Gb", "Db / C#", "Ab / G#", "Eb / D#", "Bb / A#", "F"].join("\n"),
+            identifier: "notes-circle-of-fifths"
+        },
+        {
+            name: "notes - chromatic enharmonic",
+            cards: ["Ab", "A", "A#", "Bb", "B", "C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#"].join("\n"),
+            identifier: "notes-chromatic"
+        },
+        {
+            name: "chords",
+            cards: ["// notes:", "Ab", "A", "A#", "Bb", "B", "C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#", "~ chord types:", " major 7", " minor 7", " 7", " minor major 7", " diminished 7", " augmented 7", " half-diminished 7", " 7 altered"].join("\n"),
+            identifier: "chords"
+        },
+        {
+            name: "scales",
+            cards: ["these cards have not been created yet"].join("\n"),
+            identifier: "scales"
+        },
+        {
+            name: "guitar fretboard",
+            cards: ["// strings:", "E string: ", "A string: ", "D string: ", "G string: ", "B string: ", "~ notes:", "Ab", "A", "A#", "Bb", "B", "C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#"],
+            identifier: "fretboard"
+        },
+        {
+            name: "help",
+            cards: ["// all lines starting with two slashes will be ignored.", "prefix 1", "prefix 2", "prefix 3", "~ suffixes are optional. they start after the line with the tilde.", "suffix 1", "suffix 2", "suffix 3"],
+            identifier: "help"
+        },
+    ]
+
+    addPremadeFlashcardDecksToDropdown()
+    initializePremadeFlashcardsDropdownStyle()
 
     adjustSettingsMenu()
 
@@ -1086,6 +1128,7 @@ window.onload = () => {
             flashcardTextInputLabel.fill = "black"
             randomizeFlashcardOrderText.fill = "black"
             randomizeFlashcardOrderCheckbox.style.display = "block"
+            domElements.dropdowns.flashcardDecksDropdown.style.display = "block"
         } else {
             // hide the settings menu
             numberOfBeatsText.fill = "transparent"
@@ -1104,6 +1147,7 @@ window.onload = () => {
             flashcardTextInputLabel.fill = "transparent"
             randomizeFlashcardOrderText.fill = "transparent"
             randomizeFlashcardOrderCheckbox.style.display = "none"
+            domElements.dropdowns.flashcardDecksDropdown.style.display = "none"
         }
     }
 
@@ -1345,6 +1389,23 @@ window.onload = () => {
             }
             resetFlashcardMetronome()
         })
+    }
+
+    /**
+     * populate the dropdown menu for selecting premade flashcard decks
+     */
+    function addPremadeFlashcardDecksToDropdown() {
+        for (deck of premadeFlashcardDecks) {
+            let option = document.createElement('option');
+            option.innerHTML = deck.name
+            option.value = deck.identifier
+            domElements.dropdowns.flashcardDecksDropdown.appendChild(option)
+        }
+    }
+
+    function initializePremadeFlashcardsDropdownStyle() {
+        domElements.dropdowns.flashcardDecksDropdown.style.top = "" + (flashcardTextInputLabelVerticalPosition - 18) + "px";
+        domElements.dropdowns.flashcardDecksDropdown.style.left = "" + (flashcardTextInputLabelHorizontalPosition + 100) + "px";
     }
 
     function filterTextInputToInteger(newValue, oldValue, lowerBound, upperBound) {
