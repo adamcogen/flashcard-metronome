@@ -17,7 +17,7 @@ The "flashcards" are individual lines of text, which will be shown in a random o
 
 You can specify your own list of flashcards and configure how they are shown in the settings menu of the metronome. 
 
-You can click the notes of the metronome to change their sound or mute them. You can change the nunmber of beats per measure or add subdivisions in the settings menu.
+You can click the notes of the metronome to change their sound or mute them. You can change the number of beats per measure or add subdivisions in the settings menu.
 
 #### Flashcard format
 

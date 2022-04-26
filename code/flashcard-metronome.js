@@ -149,7 +149,12 @@ window.onload = () => {
     let clickButtonsForHowManyMilliseconds = 200;
     let lastResetButtonPressTime = Number.MIN_SAFE_INTEGER;
     let clickedButtonColor = "#bfbfbf";
+    let lighterClickedButtonColor = "#c4c4c4";
     let showAllFlashcardsBeforeRepeatingAny = true;
+
+    // these will be used for the 'tap tempo' button logic, to track when it was last clicked
+    let absoluteTimeOfMostRecentTapTempoButtonClick = Number.MIN_SAFE_INTEGER;
+    let tapTempoButtonClickCount = -1;
 
     // initialize sequencer data structure
     let sequencer = new Sequencer(2, loopLengthInMillis)
@@ -402,10 +407,22 @@ window.onload = () => {
             }
         }
 
+        // this logic handles changing the color of the "reset" button. whenever that button is clicked, 
+        // it switches to the "clicked button" color for a bit, then changes back to the "unclicked" color.
         if (currentTime - lastResetButtonPressTime < clickButtonsForHowManyMilliseconds) {
             resetButtonShapes[0].fill = clickedButtonColor;
         } else {
             resetButtonShapes[0].fill = "transparent"
+        }
+
+        // this logic handles "resetting" the tap tempo button. if that button hasn't been clicked in a while,
+        // we will reset its state and "forget" the timestamp that it was clicked last.
+        // see the block comment above 'addTapTempoButtonActionListeners()' for more info on how this works.
+        let maximumAmountOfTimeToWaitForNextTapTempoButtonClick = convertBeatsPerMinuteToBeatLengthInMillis(Math.max(minimumAllowedBeatsPerMinute - 5, 0))
+        if (currentTime - absoluteTimeOfMostRecentTapTempoButtonClick > maximumAmountOfTimeToWaitForNextTapTempoButtonClick) {
+            absoluteTimeOfMostRecentTapTempoButtonClick = Number.MIN_SAFE_INTEGER
+            tapTempoButtonClickCount = -1;
+            tapTempoButtonShapes[0].fill = 'transparent'
         }
 
         two.update() // update the GUI display
@@ -551,6 +568,10 @@ window.onload = () => {
         request.send();
     }
 
+    /**
+     * the drum sequencer requires tempo be updated as loop length in millis, but the metronome
+     * uses tempo as beats per minute. this method is for making the necessary conversion.
+     */
     function convertBeatsPerMinuteToLoopLengthInMillis(beatsPerMinute, numberOfBeatsPerLoop) {
         let secondsPerMinute = 60
         let millisecondsPerSecond = 1000
@@ -562,6 +583,22 @@ window.onload = () => {
         let secondsPerMinute = 60
         let millisecondsPerSecond = 1000
         return (secondsPerMinute * millisecondsPerSecond * numberOfBeatsPerLoop) / loopLengthInMillis
+    }
+
+    /**
+     * used in the 'tap tempo' button logic, to convert the time between each click into a beats-per-minute value.
+     */
+    function convertBeatLengthInMillisToBeatsPerMinute(millisecondsPerBeat) {
+        // needed to do some more dimensional analysis haha..
+        let millisecondsPerSecond = 1000
+        let secondsPerMinute = 60
+        return (secondsPerMinute * millisecondsPerSecond) / millisecondsPerBeat
+    }
+
+    function convertBeatsPerMinuteToBeatLengthInMillis(beatsPerMinute) {
+        let millisecondsPerSecond = 1000
+        let secondsPerMinute = 60
+        return (secondsPerMinute * millisecondsPerSecond) / beatsPerMinute
     }
 
     // set up a default initial drum sequence with some notes in it
@@ -922,10 +959,48 @@ window.onload = () => {
         return [tapTempoButton, tapTempoButtonText]
     }
 
+    /**
+     * how the tap tempo button works:
+     * the first time you click it, it notes the time it was clicked.
+     * then, when you click it again, it notes the time of the second click.
+     * then, it calculates a tempo based off the two clicks -- if they were two
+     * beats, what would be the bpm?
+     * if you click the tap tempo button some more, it keeps calculating new
+     * BPMs based on the new click and the one before it. 
+     * another important piece is that in the main update loop, there is a check
+     * that resets the state of this button -- i.e. if you wait long enough, your
+     * most recent click will be forgotten and you will need to click the button
+     * twice again if you want to set a new tempo with it.
+     * the tap tempo button only ever calculates a tempo based off of two clicks.
+     * it would be possible to find the average tempo of a group of many clicks, 
+     * but that would be more complicated logic to implement.
+     */
     function addTapTempoButtonActionListeners() {
         for (shape of tapTempoButtonShapes) {
             shape._renderer.elem.addEventListener('click', (event) => {
-                console.log("tap tempo button pressed (doesn't do anything yet)")
+                tapTempoButtonClickCount++;
+                pause();
+                // toggle button color back and forth between 'clicked' and 'unclicked' color
+                if (tapTempoButtonClickCount % 2 === 0) {
+                    playDrumSampleNow(HIGH);
+                    tapTempoButtonShapes[0].fill = lighterClickedButtonColor
+                } else {
+                    playDrumSampleNow(MID);
+                    tapTempoButtonShapes[0].fill = clickedButtonColor
+                }
+                if (absoluteTimeOfMostRecentTapTempoButtonClick === Number.MIN_SAFE_INTEGER) {
+                    // the tap tempo button hasn't been clicked in long enough that it was reset.
+                    // so just set 'most recent click time' to a new value, but don't calculate 
+                    // a tempo based off of it yet, since this is only the first recent click.
+                    absoluteTimeOfMostRecentTapTempoButtonClick = currentTime;
+                } else {
+                    // the tap tempo button has been clicked recently before this click, so
+                    // calculate a new tempo based on the time of the recent click and the 
+                    // click that caused this mouse event.
+                    newTempo = convertBeatLengthInMillisToBeatsPerMinute(currentTime - absoluteTimeOfMostRecentTapTempoButtonClick);
+                    setMetronomeTempo(newTempo)
+                    absoluteTimeOfMostRecentTapTempoButtonClick = currentTime;
+                }
             })
             // prevent text selection for the 'TAP' text label
             shape._renderer.elem.addEventListener('mousedown', (event) => {
@@ -1227,18 +1302,24 @@ window.onload = () => {
             if (newTextInputValue === "" || isNaN(newTextInputValue)) { // check if new input is a real number. if not, switch input box back to whatever value it had before.
                 newTextInputValue = beatsPerMinute
             }
-            newTextInputValue = parseFloat(newTextInputValue) // do we allow floats rather than ints?? i think we could. it probably barely makes a difference though
-            // don't allow setting loop length shorter than the look-ahead length or longer than the width of the text input
-            newTextInputValue = confineNumberToBounds(newTextInputValue, minimumAllowedBeatsPerMinute, maximumAllowedBeatsPerMinute)
-            domElements.textInputs.loopLengthMillis.value = newTextInputValue
-            updateSequencerLoopLength(convertBeatsPerMinuteToLoopLengthInMillis(newTextInputValue, sequencer.rows[0].getNumberOfSubdivisions()))
-            beatsPerMinute = newTextInputValue
+            newTextInputValue = parseFloat(newTextInputValue) // should we allow floats rather than ints?? i think we could. it probably barely makes a difference though
+            // validation of the input given and updating of the textbox value will happen in the setTempo method
+            setMetronomeTempo(newTextInputValue)
         })
+    }
+
+    function setMetronomeTempo(newTempo) {
+        // don't allow setting loop length shorter than the look-ahead length or longer than the width of the text input
+        newTempo = Math.floor(newTempo)
+        newTempo = confineNumberToBounds(newTempo, minimumAllowedBeatsPerMinute, maximumAllowedBeatsPerMinute)
+        domElements.textInputs.loopLengthMillis.value = newTempo
+        updateSequencerLoopLength(convertBeatsPerMinuteToLoopLengthInMillis(newTempo, sequencer.rows[0].getNumberOfSubdivisions()))
+        beatsPerMinute = newTempo
     }
 
     // intialize the text that will start out in the flashcard text input box
     function initializeFlashcardTextInputValue() {
-        domElements.textInputs.flashcardTextInput.value = ["// flashcard prefixes: (all lines starting with two slashes // will be ignored)", "Ab", "A", "A#", "Bb", "B", "C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#", "~ flashcard suffixes: (these begin after the first line that starts with a tilde ~ and you can use no suffixes by deleting this section)", " major 7", " minor 7", " 7", " minor major 7", " diminished 7", " augmented 7", " half-diminished 7", " 7 altered"].join("\n")
+        domElements.textInputs.flashcardTextInput.value = ["// flashcard prefixes: (all lines starting \n// with two slashes // will be ignored)", "Ab", "A", "A#", "Bb", "B", "C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#", "~ flashcard suffixes: \n// (these begin after the first line that \n// starts with a tilde ~ and you can use \n// no suffixes by deleting this section)", " major 7", " minor 7", " 7", " minor major 7", " diminished 7", " augmented 7", " half-diminished 7", " 7 altered"].join("\n")
     }
 
     function initializeFlashcardTextInputStyles() {
