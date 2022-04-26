@@ -148,7 +148,7 @@ window.onload = () => {
     let randomizeFlashcardOrderCheckboxVerticalPosition = sequencerVerticalOffset + 640
     let randomizeFlashcardOrderCheckboxHorizontalPosition = sequencerHorizontalOffset + 270
     // flashcard input textbox label / dropdown selector position
-    let flashcardTextInputLabelVerticalPosition = sequencerVerticalOffset + 409
+    let flashcardTextInputLabelVerticalPosition = sequencerVerticalOffset + 412
     let flashcardTextInputLabelHorizontalPosition = sequencerHorizontalOffset - 2
 
     // these will be used to slowly change colors of buttons that are pressed
@@ -239,12 +239,12 @@ window.onload = () => {
     let premadeFlashcardDecks = [
         {
             name: "notes - circle of fifths",
-            cards: ["C", "G", "D", "A", "E", "B", "F# / Gb", "Db / C#", "Ab / G#", "Eb / D#", "Bb / A#", "F"].join("\n"),
+            cards: ["// this list of notes follows", "// the circle of fifths in order", "C", "G", "D", "A", "E", "B", "F# / Gb", "Db / C#", "Ab / G#", "Eb / D#", "Bb / A#", "F"].join("\n"),
             identifier: "notes-circle-of-fifths"
         },
         {
             name: "notes - chromatic enharmonic",
-            cards: ["Ab", "A", "A#", "Bb", "B", "C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#"].join("\n"),
+            cards: ["// this list of notes ascends chromatically", "// and includes a separate card for each", "// enharmonic equivalent", "Ab", "A", "A#", "Bb", "B", "C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#"].join("\n"),
             identifier: "notes-chromatic"
         },
         {
@@ -254,23 +254,24 @@ window.onload = () => {
         },
         {
             name: "scales",
-            cards: ["these cards have not been created yet"].join("\n"),
+            cards: ["// notes: ", "Ab", "A", "A#", "Bb", "B", "C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#", "~ scales: ", " major ionian", " major dorian", " major phrygian", " major lydian", " major mixolydian", " major aeolian (natural minor)", " major locrian", " whole-half dimished (tonic diminished)", " half-whole dimished (dominant dimished)", " whole tone", " harmonic minor", " melodic minor ('ascending')", " altered", " lydian dominant", " pentatonic"].join("\n"),
             identifier: "scales"
         },
         {
             name: "guitar fretboard",
-            cards: ["// strings:", "E string: ", "A string: ", "D string: ", "G string: ", "B string: ", "~ notes:", "Ab", "A", "A#", "Bb", "B", "C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#"],
+            cards: ["// strings:", "E string: ", "A string: ", "D string: ", "G string: ", "B string: ", "~ notes:", " Ab", " A", " A#", " Bb", " B", " C", " C#", " Db", " D", " D#", " Eb", " E", " F", " F#", " Gb", " G", " G#"].join("\n"),
             identifier: "fretboard"
         },
         {
             name: "help",
-            cards: ["// all lines starting with two slashes will be ignored.", "prefix 1", "prefix 2", "prefix 3", "~ suffixes are optional. they start after the line with the tilde.", "suffix 1", "suffix 2", "suffix 3"],
+            cards: ["// all lines starting with two slashes will be ignored.", "card 1;", "card 2;", "card 3;", "~ suffixes are optional. they start after the line with the tilde.", " suffix 1", " suffix 2", " suffix 3"].join("\n"),
             identifier: "help"
         },
     ]
 
     addPremadeFlashcardDecksToDropdown()
     initializePremadeFlashcardsDropdownStyle()
+    initializePremadeFlashcardsDropdownActionListeners()
 
     adjustSettingsMenu()
 
@@ -1372,11 +1373,11 @@ window.onload = () => {
 
     // intialize the text that will start out in the flashcard text input box
     function initializeFlashcardTextInputValue() {
-        domElements.textInputs.flashcardTextInput.value = ["// flashcard prefixes: (all lines starting \n// with two slashes // will be ignored)", "Ab", "A", "A#", "Bb", "B", "C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#", "~ flashcard suffixes: \n// (these begin after the first line that \n// starts with a tilde ~ and you can specify \n// no suffixes by deleting this section)", " major 7", " minor 7", " 7", " minor major 7", " diminished 7", " augmented 7", " half-diminished 7", " 7 altered"].join("\n")
+        domElements.textInputs.flashcardTextInput.value = ["// flashcard prefixes: note names", "Ab", "A", "A#", "Bb", "B", "C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#", "~ flashcard suffixes: chord types", " major 7", " minor 7", " 7", " minor major 7", " diminished 7", " augmented 7", " half-diminished 7", " 7 altered"].join("\n")
     }
 
     function initializeFlashcardTextInputStyles() {
-        domElements.textInputs.flashcardTextInput.style.top = "" + (sequencerVerticalOffset + 425) + "px"
+        domElements.textInputs.flashcardTextInput.style.top = "" + (sequencerVerticalOffset + 430) + "px"
         domElements.textInputs.flashcardTextInput.style.left = "" + (sequencerHorizontalOffset) + "px"
     }
 
@@ -1387,6 +1388,7 @@ window.onload = () => {
             if (arrayEquals(oldFlashcards, allFlashcards)) {
                 return;
             }
+            domElements.dropdowns.flashcardDecksDropdown.selectedIndex = 0 // if a change was made, de-select any pre-made flashcard decks
             resetFlashcardMetronome()
         })
     }
@@ -1406,6 +1408,15 @@ window.onload = () => {
     function initializePremadeFlashcardsDropdownStyle() {
         domElements.dropdowns.flashcardDecksDropdown.style.top = "" + (flashcardTextInputLabelVerticalPosition - 18) + "px";
         domElements.dropdowns.flashcardDecksDropdown.style.left = "" + (flashcardTextInputLabelHorizontalPosition + 100) + "px";
+    }
+
+    function initializePremadeFlashcardsDropdownActionListeners() {
+        domElements.dropdowns.flashcardDecksDropdown.addEventListener('change', (event) => {
+            let selectedFlashcardDeckIndex = domElements.dropdowns.flashcardDecksDropdown.selectedIndex - 1 // subtract one because 0 has been left empty, so index is off by one from list of flashcard decks
+            domElements.textInputs.flashcardTextInput.value = premadeFlashcardDecks[selectedFlashcardDeckIndex].cards
+            allFlashcards = parseFlashcardsFromString(premadeFlashcardDecks[selectedFlashcardDeckIndex].cards)
+            resetFlashcards()
+        });
     }
 
     function filterTextInputToInteger(newValue, oldValue, lowerBound, upperBound) {
