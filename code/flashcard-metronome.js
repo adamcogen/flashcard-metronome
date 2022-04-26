@@ -420,9 +420,7 @@ window.onload = () => {
         // see the block comment above 'addTapTempoButtonActionListeners()' for more info on how this works.
         let maximumAmountOfTimeToWaitForNextTapTempoButtonClick = convertBeatsPerMinuteToBeatLengthInMillis(Math.max(minimumAllowedBeatsPerMinute - 5, 0))
         if (currentTime - absoluteTimeOfMostRecentTapTempoButtonClick > maximumAmountOfTimeToWaitForNextTapTempoButtonClick) {
-            absoluteTimeOfMostRecentTapTempoButtonClick = Number.MIN_SAFE_INTEGER
-            tapTempoButtonClickCount = -1;
-            tapTempoButtonShapes[0].fill = 'transparent'
+            resetTapTempoButtonState()
         }
 
         two.update() // update the GUI display
@@ -1010,6 +1008,16 @@ window.onload = () => {
         }
     }
 
+    /**
+     * reset the state of the tap tempo button.
+     * forget about any previous clicks.
+     */
+    function resetTapTempoButtonState() {
+        absoluteTimeOfMostRecentTapTempoButtonClick = Number.MIN_SAFE_INTEGER
+        tapTempoButtonClickCount = -1;
+        tapTempoButtonShapes[0].fill = 'transparent'
+    }
+
     function initializeSettingsButtonShapes() {
         let buttonRectangle = two.makePath(
             [
@@ -1127,6 +1135,7 @@ window.onload = () => {
             for (let shape of pauseButtonShapes) {
                 shape.fill = "transparent"
             }
+            resetTapTempoButtonState()
         }
     }
 
@@ -1319,7 +1328,7 @@ window.onload = () => {
 
     // intialize the text that will start out in the flashcard text input box
     function initializeFlashcardTextInputValue() {
-        domElements.textInputs.flashcardTextInput.value = ["// flashcard prefixes: (all lines starting \n// with two slashes // will be ignored)", "Ab", "A", "A#", "Bb", "B", "C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#", "~ flashcard suffixes: \n// (these begin after the first line that \n// starts with a tilde ~ and you can use \n// no suffixes by deleting this section)", " major 7", " minor 7", " 7", " minor major 7", " diminished 7", " augmented 7", " half-diminished 7", " 7 altered"].join("\n")
+        domElements.textInputs.flashcardTextInput.value = ["// flashcard prefixes: (all lines starting \n// with two slashes // will be ignored)", "Ab", "A", "A#", "Bb", "B", "C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#", "~ flashcard suffixes: \n// (these begin after the first line that \n// starts with a tilde ~ and you can specify \n// no suffixes by deleting this section)", " major 7", " minor 7", " 7", " minor major 7", " diminished 7", " augmented 7", " half-diminished 7", " 7 altered"].join("\n")
     }
 
     function initializeFlashcardTextInputStyles() {
