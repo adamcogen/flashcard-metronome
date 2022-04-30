@@ -2,14 +2,16 @@
 
 This project is a music practice tool that allows you to synchronize a "flashcard deck" to a metronome. 
 
-The code is a quick-and-dirty adaptation of the JavaScript drum machine I am working on here https://github.com/adamcogen/drum-machine with some GUI changes. 
-
-The 'drum machine' repo uses the same data structure / scheduling algorithm for the backend, and will be cleaner and better-maintained than this flashcard metronome repo.
-
-Metronome specifications:
+This metronome:
  - uses precise audio timing, by scheduling notes ahead-of-time with the WebAudio API
  - runs on client-side-only JavaScript
  - has primarily been tested in Chrome browser
+
+ ![Flashcard Metronome](images/js-2-smaller.gif "Flashcard Metronome")
+
+ The code is a quick-and-dirty adaptation of the JavaScript drum machine I am working on here https://github.com/adamcogen/drum-machine with some GUI changes. 
+
+The 'drum machine' repo uses the same data structure / scheduling algorithm for the backend, and will be cleaner and better-maintained than this flashcard metronome repo.
 
 ### Usage
 
@@ -54,6 +56,8 @@ prefix 1 ; suffix 2
 prefix 2 ; suffix 1
 prefix 2 ; suffix 2
 ```
+
+![Flashcard Metronome](images/js-1-smaller.png "Flashcard Metronome")
 
 ### Run locally:
 

@@ -957,7 +957,7 @@ window.onload = () => {
         resetButton.stroke = sequencerAndToolsLineColor
         resetButton.fill = 'transparent'
 
-        let resetButtonText = initializeLabelText("<<", resetButtonHorizontalOffset + 23, resetButtonVerticalOffset + 22, "center")
+        let resetButtonText = initializeLabelText("<<", resetButtonHorizontalOffset + 23, resetButtonVerticalOffset + 25, "center")
         resetButtonText.fill = sequencerAndToolsLineColor
         resetButtonText.stroke = 'transparent'
         resetButtonText.size = 30
