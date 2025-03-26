@@ -147,6 +147,9 @@ window.onload = () => {
     // 'randomize order?' checkbox position
     let randomizeFlashcardOrderCheckboxVerticalPosition = sequencerVerticalOffset + 640
     let randomizeFlashcardOrderCheckboxHorizontalPosition = sequencerHorizontalOffset + 270
+    // 'allow same flashcard to repeat multiple times in a row?' checkbox position
+    let allowSameFlashcardMultipleTimesInARowCheckboxVerticalPosition = sequencerVerticalOffset + 700
+    let allowSameFlashcardMultipleTimesInARowCheckboxHorizontalPosition = sequencerHorizontalOffset + 440
     // flashcard input textbox label / dropdown selector position
     let flashcardTextInputLabelVerticalPosition = sequencerVerticalOffset + 412
     let flashcardTextInputLabelHorizontalPosition = sequencerHorizontalOffset - 2
@@ -171,14 +174,17 @@ window.onload = () => {
 
     initializeFlashcardTextInputValue()
 
-    let allFlashcards = parseFlashcardsFromString(domElements.textInputs.flashcardTextInput.value)
-    let currentRemainingFlashcards = copyArray(allFlashcards)
-    let indexOfNextFlashcardToShow = -1;
-
     let numberOfMeasuresToShowEachFlashcardFor = 2;
     let beatNumberToShowNextFlashcardPreviewOn = 3;
     let showPreviewOfNextFlashcard = true;
     let randomizeFlashcardOrder = true;
+    let allowSameFlashcardMultipleTimesInARow = false;
+
+    let allFlashcards = parseFlashcardsFromString(domElements.textInputs.flashcardTextInput.value)
+    let allFlashcardsDeduped = [];
+    
+    resetFlashcards();
+    let indexOfNextFlashcardToShow = -1;
 
     let showSettingsMenu = false;
 
@@ -211,6 +217,8 @@ window.onload = () => {
     let flashcardTextInputLabel = initializeLabelText("flashcards:", flashcardTextInputLabelHorizontalPosition, flashcardTextInputLabelVerticalPosition, "left")
     let randomizeFlashcardOrderCheckbox = initializeCheckbox(randomizeFlashcardOrderCheckboxVerticalPosition, randomizeFlashcardOrderCheckboxHorizontalPosition)
     let randomizeFlashcardOrderText = initializeLabelText("randomize order?", randomizeFlashcardOrderCheckboxHorizontalPosition - 5, randomizeFlashcardOrderCheckboxVerticalPosition + 14, "right")
+    let allowSameFlashcardMultipleTimesInARowCheckbox = initializeCheckbox(allowSameFlashcardMultipleTimesInARowCheckboxVerticalPosition, allowSameFlashcardMultipleTimesInARowCheckboxHorizontalPosition)
+    let allowSameFlashcardMultipleTimesInARowText = initializeLabelText("allow same flashcard to appear multiple times in a row?", allowSameFlashcardMultipleTimesInARowCheckboxHorizontalPosition - 5, allowSameFlashcardMultipleTimesInARowCheckboxVerticalPosition + 14, "right")
 
     two.update(); // this initial 'update' creates SVG '_renderer' properties for our shapes that we can add action listeners to, so it needs to go here
 
@@ -232,6 +240,7 @@ window.onload = () => {
     addShowAllFlashcardsBeforeRepeatingAnyCheckboxActionListeners()
     addShowNextFlashcardPreviewCheckboxActionListeners()
     addRandomizeFlashcardOrderCheckboxActionListeners()
+    addAllowSameFlashcardMultipleTimesInARowCheckboxActionListeners()
 
     initializeFlashcardTextInputStyles()
     initializeFlashcardTextInputActionListeners()
@@ -239,7 +248,7 @@ window.onload = () => {
     let premadeFlashcardDecks = [
         {
             name: "notes - circle of fifths",
-            cards: ["// this list of notes follows", "// the circle of fifths in order", "C", "G", "D", "A", "E", "B", "F# / Gb", "Db / C#", "Ab / G#", "Eb / D#", "Bb / A#", "F"].join("\n"),
+            cards: ["// this list of notes follows", "// the circle of fifths in order", "F", "C", "G", "D", "A", "E", "B", "F# / Gb", "Db / C#", "Ab / G#", "Eb / D#", "Bb / A#"].join("\n"),
             identifier: "notes-circle-of-fifths"
         },
         {
@@ -477,20 +486,24 @@ window.onload = () => {
                 currentFlashcardText.value = currentRemainingFlashcards[indexOfNextFlashcardToShow];
                 if (showAllFlashcardsBeforeRepeatingAny) {
                     deleteArrayElementAtIndex(currentRemainingFlashcards, indexOfNextFlashcardToShow);
-                    cardsRemainingText.value = "Cards used: " + (allFlashcards.length - currentRemainingFlashcards.length) + " / " + allFlashcards.length
+                    cardsRemainingText.value = "Cards used: " + (allFlashcardsDeduped.length - currentRemainingFlashcards.length) + " / " + allFlashcardsDeduped.length
                 }
             }
         }
 
         if (currentRemainingFlashcards.length === 0){
-            currentRemainingFlashcards = copyArray(allFlashcards);
+            resetFlashcards();
         }
 
         // show the preview of the next flashcard
         if ((measureNumber % numberOfMeasuresToShowEachFlashcardFor === numberOfMeasuresToShowEachFlashcardFor - 1) && beatNumber >= beatNumberToShowNextFlashcardPreviewOn) {
             if (beatNumber === beatNumberToShowNextFlashcardPreviewOn) {
                 if (randomizeFlashcardOrder) {
-                    indexOfNextFlashcardToShow = getRandomInteger(currentRemainingFlashcards.length);
+                    do {
+                        indexOfNextFlashcardToShow = getRandomInteger(currentRemainingFlashcards.length);
+                        cardIsRepeating = (currentFlashcardText.value === currentRemainingFlashcards[indexOfNextFlashcardToShow]);
+                        nextCardIsValid = allowSameFlashcardMultipleTimesInARow || !cardIsRepeating
+                    } while (!nextCardIsValid);
                 } else {
                     indexOfNextFlashcardToShow = 0;
                 }
@@ -1129,6 +1142,8 @@ window.onload = () => {
             flashcardTextInputLabel.fill = "black"
             randomizeFlashcardOrderText.fill = "black"
             randomizeFlashcardOrderCheckbox.style.display = "block"
+            allowSameFlashcardMultipleTimesInARowText.fill = "black"
+            allowSameFlashcardMultipleTimesInARowCheckbox.style.display = "block"
             domElements.dropdowns.flashcardDecksDropdown.style.display = "block"
         } else {
             // hide the settings menu
@@ -1148,6 +1163,8 @@ window.onload = () => {
             flashcardTextInputLabel.fill = "transparent"
             randomizeFlashcardOrderText.fill = "transparent"
             randomizeFlashcardOrderCheckbox.style.display = "none"
+            allowSameFlashcardMultipleTimesInARowText.fill = "transparent"
+            allowSameFlashcardMultipleTimesInARowCheckbox.style.display = "none"
             domElements.dropdowns.flashcardDecksDropdown.style.display = "none"
         }
     }
@@ -1234,13 +1251,31 @@ window.onload = () => {
                 randomizeFlashcardOrder = true;
                 showAllFlashcardsBeforeRepeatingAnyCheckbox.disabled = false;
                 showAllFlashcardsBeforeRepeatingAnyCheckboxText.fill = "black";
-                resetFlashcards();
+                allowSameFlashcardMultipleTimesInARowCheckbox.disabled = false
+                allowSameFlashcardMultipleTimesInARowText.fill = "black"
             } else {
                 randomizeFlashcardOrder = false;
                 showAllFlashcardsBeforeRepeatingAnyCheckbox.disabled = true;
                 showAllFlashcardsBeforeRepeatingAnyCheckboxText.fill = "gray";
-                resetFlashcards();
+                // allow flashcards to repeat, since there could be multiple of the same flashcard in a row if they aren't shuffled
+                allowSameFlashcardMultipleTimesInARowCheckbox.disabled = true
+                allowSameFlashcardMultipleTimesInARowCheckbox.checked = true
+                allowSameFlashcardMultipleTimesInARow = true
+                allowSameFlashcardMultipleTimesInARowText.fill = "gray"
             }
+            resetFlashcardMetronome();
+        })
+    }
+
+    function addAllowSameFlashcardMultipleTimesInARowCheckboxActionListeners() {
+        allowSameFlashcardMultipleTimesInARowCheckbox.checked = allowSameFlashcardMultipleTimesInARow;
+        allowSameFlashcardMultipleTimesInARowCheckbox.addEventListener('click', (event) => {
+            if (allowSameFlashcardMultipleTimesInARowCheckbox.checked) {
+                allowSameFlashcardMultipleTimesInARow = true;
+            } else {
+                allowSameFlashcardMultipleTimesInARow = false;
+            }
+            resetFlashcardMetronome();
         })
     }
 
@@ -1319,7 +1354,14 @@ window.onload = () => {
     }
 
     function resetFlashcards() {
-        currentRemainingFlashcards = copyArray(allFlashcards);
+        if (allowSameFlashcardMultipleTimesInARow) {
+            allFlashcardsDeduped = copyArray(allFlashcards);
+            currentRemainingFlashcards = copyArray(allFlashcardsDeduped);
+        } else {
+            // convert to a set then back to an array to remove duplicates
+            allFlashcardsDeduped = [...new Set(allFlashcards)];
+            currentRemainingFlashcards = copyArray(allFlashcardsDeduped);
+        }
     }
 
     function resetFlashcardMetronome() {
@@ -1332,7 +1374,7 @@ window.onload = () => {
         indexOfNextFlashcardToShow = -1;
         currentFlashcardText.value = "";
         nextFlashcardPreviewText.value = "";
-        cardsRemainingText.value = "Cards used: 0 / " + allFlashcards.length
+        cardsRemainingText.value = "Cards used: 0 / " + allFlashcardsDeduped.length
         // if (!wasPaused) {
         //     unpause()
         // }
@@ -1389,6 +1431,16 @@ window.onload = () => {
                 return;
             }
             domElements.dropdowns.flashcardDecksDropdown.selectedIndex = 0 // if a change was made, de-select any pre-made flashcard decks
+            if (allFlashcards.length <= 1) {
+                // if there is only one flashcard, the same card will have to be shown multiple times in a row
+                allowSameFlashcardMultipleTimesInARowCheckbox.disabled = true
+                allowSameFlashcardMultipleTimesInARowCheckbox.checked = true
+                allowSameFlashcardMultipleTimesInARow = true
+                allowSameFlashcardMultipleTimesInARowText.fill = "gray"
+            } else {
+                allowSameFlashcardMultipleTimesInARowCheckbox.disabled = false
+                allowSameFlashcardMultipleTimesInARowText.fill = "black"
+            }
             resetFlashcardMetronome()
         })
     }
@@ -1415,7 +1467,7 @@ window.onload = () => {
             let selectedFlashcardDeckIndex = domElements.dropdowns.flashcardDecksDropdown.selectedIndex - 1 // subtract one because 0 has been left empty, so index is off by one from list of flashcard decks
             domElements.textInputs.flashcardTextInput.value = premadeFlashcardDecks[selectedFlashcardDeckIndex].cards
             allFlashcards = parseFlashcardsFromString(premadeFlashcardDecks[selectedFlashcardDeckIndex].cards)
-            resetFlashcards()
+            resetFlashcardMetronome()
         });
     }
 
